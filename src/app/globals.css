@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  /* Apple Squircle utility for App Icons (Continuous rounded corners) */
+  .squircle {
+    border-radius: 22.5%; /* Approximate continuous corner */
   }
 }
 
+:root {
+  --background: #042a33;
+  --foreground: #ffffff;
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Hide scrollbars ── */
+.hide-scrollbars::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbars {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Feed card entrance animation ── */
+@keyframes feedCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feed-card-enter {
+  animation: feedCardEnter 0.4s ease-out both;
+}
+
+/* ── Story progress bar ── */
+@keyframes story-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ── Marketplace pulse glow ── */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ── Video circle preview ── */
+.video-circle {
+  border-radius: 50%;
+  overflow: hidden;
+  aspect-ratio: 1;
 }
