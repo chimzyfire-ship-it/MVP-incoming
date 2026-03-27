@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, Star, Code, Gem, Users, CheckCircle, MoreHorizontal } from 'lucide-react';
-import type { Repo } from './RepoCard';
+import { Repo } from './RepoCard';
 
 // 1. Define the props interface
 interface RepoDetailsProps {
