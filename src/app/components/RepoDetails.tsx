@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Image from 'next/image';
 import { ChevronLeft, Star, Code, Gem, Users, CheckCircle, MoreHorizontal } from 'lucide-react';
 import { Repo } from './RepoCard';
 
@@ -56,7 +55,7 @@ const HeroSection = ({ repo, onRun, showShopActions }: { repo: Repo; onRun: (rep
   <section className="flex flex-col items-start pt-8 pb-6 border-b border-zinc-800">
     <div className="flex items-center w-full">
       <div className="w-24 h-24 bg-zinc-800 rounded-2xl flex-shrink-0 relative overflow-hidden">
-        {repo.avatar && <Image src={repo.avatar} alt={repo.title} layout="fill" objectFit="cover" />}
+        
       </div>
       <div className="ml-4 flex-grow">
         <h1 className="text-3xl font-bold tracking-tight">{repo.title}</h1>
