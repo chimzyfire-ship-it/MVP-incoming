@@ -1,0 +1,60 @@
+[
+  {
+    "id": "55fb94f0-f2dd-4c62-988b-dbc9cf6dd183",
+    "repo": {
+      "id": 348060227,
+      "title": "astro",
+      "url": "https://github.com/withastro/astro",
+      "plainEnglishDescription": "Astro web framework",
+      "stars": 58000
+    },
+    "stage": "queued",
+    "createdAt": 1775086067115,
+    "updatedAt": 1775086067116,
+    "runtime": {
+      "runtime": "node18",
+      "framework": "nextjs",
+      "packageManager": "npm",
+      "installCommand": "npm install --prefer-offline",
+      "buildCommand": "npm run build || npm run compile || true",
+      "startCommand": "npm run start -- --port $PORT"
+    },
+    "sandbox": {
+      "engine": "firecracker",
+      "cpu": "2 vCPU",
+      "memoryMb": 4096
+    },
+    "security": {
+      "network": "egress allowlisted + inbound proxied",
+      "filesystem": "ephemeral rootfs + read-only repo clone"
+    },
+    "cacheKey": "repo:348060227:node18:npm",
+    "appUrl": null,
+    "health": {
+      "status": "starting",
+      "restartCount": 0,
+      "lastCheckAt": 1775086067115
+    },
+    "infra": {
+      "template": "nextjs-web",
+      "services": {
+        "postgres": false,
+        "redis": false
+      },
+      "envKeys": [],
+      "secretRefs": []
+    },
+    "serviceBindings": {},
+    "logs": [
+      "2026-04-01T23:27:47.116Z Job accepted into Run Cloud queue."
+    ],
+    "workspacePath": "",
+    "port": null,
+    "executor": "local",
+    "targetOrigin": null,
+    "containerId": null,
+    "injectedEnv": {},
+    "serviceContainers": [],
+    "infraNetwork": null
+  }
+]

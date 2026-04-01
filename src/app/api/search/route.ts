@@ -27,19 +27,37 @@ export async function GET(request: Request) {
   }
 
   const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(q)}&sort=stars&order=desc&per_page=100`;
+  const isSingleWord = !q.includes(" ");
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-      },
-    });
+    const fetchPromises = [
+      fetch(url, { headers: { Accept: "application/vnd.github.v3+json" } })
+    ];
 
-    if (!res.ok) throw new Error("GitHub API failed");
+    if (isSingleWord) {
+      const userReposUrl = `https://api.github.com/users/${encodeURIComponent(q)}/repos?sort=updated&per_page=50`;
+      fetchPromises.push(fetch(userReposUrl, { headers: { Accept: "application/vnd.github.v3+json" } }));
+    }
 
-    const data: GitHubSearchResponse = await res.json();
+    const responses = await Promise.all(fetchPromises);
+    const searchRes = responses[0];
+    
+    if (!searchRes.ok) throw new Error("GitHub search API failed");
 
-    const mapped = (data.items || []).map((repo) => ({
+    const searchData: GitHubSearchResponse = await searchRes.json();
+    let allRepos = searchData.items || [];
+
+    if (responses[1] && responses[1].ok) {
+      const userRepos: GitHubRepo[] = await responses[1].json();
+      if (Array.isArray(userRepos)) {
+        // Keep unique repos
+        const existingIds = new Set(allRepos.map(r => r.id));
+        const newRepos = userRepos.filter(r => !existingIds.has(r.id));
+        allRepos = [...newRepos, ...allRepos];
+      }
+    }
+
+    const mapped = allRepos.map((repo) => ({
       id: repo.id,
       title: repo.name,
       fullName: repo.full_name,

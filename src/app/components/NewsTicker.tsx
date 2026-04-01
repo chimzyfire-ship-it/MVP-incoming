@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useRef } from "react";
-import { ArrowUpRight, Play } from "lucide-react";
-import { getRepoBackdrop, getRepoCover, type Repo } from "./RepoCard";
-import { summarizeRepoForBeginners } from "@/lib/repoSummary";
+import { Play } from "lucide-react";
+import { getRepoBackdrop, type Repo } from "./RepoCard";
+import { friendlyCategoryLabel, summarizeRepoForBeginners } from "@/lib/repoSummary";
 
 interface NewsTickerProps {
   repos: Repo[];
@@ -20,7 +20,6 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
   const renderCard = (repo: Repo, idx: number, mode: "mobile" | "desktop") => {
     const summary = summarizeRepoForBeginners(repo);
     const tag = idx === 0 ? "Top pick" : idx === 1 ? "Popular" : idx === 2 ? "New" : "Try now";
-    const cover = getRepoCover(repo);
     const backdrop = getRepoBackdrop(repo);
     const toneClass =
       idx % 3 === 0
@@ -46,15 +45,7 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
               sizes={mode === "mobile" ? "92vw" : "33vw"}
               className="object-cover"
             />
-            {cover ? (
-              <Image
-                src={cover}
-                alt={`${repo.title} preview`}
-                fill
-                sizes={mode === "mobile" ? "92vw" : "33vw"}
-                className="object-cover opacity-30 mix-blend-screen transition-transform duration-300 group-hover:scale-[1.02]"
-              />
-            ) : null}
+            {/* Removed: cover image / opengraph quick-look overlay */}
             <div className={`absolute inset-0 bg-gradient-to-t ${toneClass} via-transparent to-transparent`} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-zinc-100 backdrop-blur">
@@ -72,9 +63,6 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
                   />
                 ) : null}
               </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-zinc-100 backdrop-blur">
-                <ArrowUpRight className="h-4 w-4" />
-              </div>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 sm:p-5">
@@ -91,12 +79,12 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-300/80">
-                {repo.language && repo.language !== "Unknown" ? repo.language : "Open Source"}
+                {friendlyCategoryLabel(repo)}
               </p>
               <h3 className="truncate text-[22px] font-semibold tracking-tight text-white">
                 {repo.title}
               </h3>
-              <p className="line-clamp-1 text-sm text-zinc-300">
+              <p className="line-clamp-2 text-sm leading-snug text-zinc-300">
                 {summary.short}
               </p>
             </div>
@@ -107,7 +95,7 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
           </div>
           <div className="flex items-center justify-between border-t border-white/10 px-4 py-2.5 sm:px-5">
             <p className="truncate text-xs text-zinc-400">By {repo.owner}</p>
-            <p className="text-xs font-medium text-zinc-300">{repo.stars.toLocaleString()} likes</p>
+            <p className="text-xs font-medium text-zinc-300">{repo.stars.toLocaleString()} fans</p>
           </div>
         </button>
       </article>

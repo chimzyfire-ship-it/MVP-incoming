@@ -3,6 +3,34 @@ import { spawn, type ChildProcess } from "child_process";
 import path from "path";
 import { promises as fs } from "fs";
 
+// ── Optional Redis + BullMQ ────────────────────────────────────────────────
+// These are only used when REDIS_URL is explicitly set in the environment.
+// Without Redis the app falls back to the local in-process queue.
+let redis: import("ioredis").default | null = null;
+let buildQueue: import("bullmq").Queue | null = null;
+let redisInitAttempted = false; // prevents retry-looping on failed connections
+
+async function tryInitRedis() {
+  if (redisInitAttempted) return; // already attempted (success or failure)
+  redisInitAttempted = true;
+  const url = process.env.REDIS_URL;
+  if (!url) return; // skip — no Redis configured
+  try {
+    const { default: Redis } = await import("ioredis");
+    const { Queue } = await import("bullmq");
+    const client = new Redis(url, { maxRetriesPerRequest: null, lazyConnect: true });
+    await client.connect();
+    redis = client;
+    buildQueue = new Queue("Run Cloud", { connection: client });
+    console.log("[run/store] Connected to Redis successfully.");
+  } catch (err) {
+    console.warn("[run/store] Redis unavailable — falling back to local queue.", err);
+    redis = null;
+    buildQueue = null;
+  }
+}
+
+
 interface RepoPayload {
   id: number;
   title: string;
@@ -207,7 +235,11 @@ function appendLog(job: StoredRunJob, message: string) {
 }
 
 async function ensureStorage() {
-  await fs.mkdir(WORKSPACES_DIR, { recursive: true });
+  try {
+    await fs.mkdir(WORKSPACES_DIR, { recursive: true });
+  } catch (e) {
+    console.warn("Could not create directories (likely read-only Vercel environment).");
+  }
 }
 
 async function saveJobs() {
@@ -216,7 +248,11 @@ async function saveJobs() {
     ...job,
     logs: [...job.logs],
   }));
-  await fs.writeFile(JOBS_FILE, JSON.stringify(payload, null, 2), "utf8");
+  try {
+    await fs.writeFile(JOBS_FILE, JSON.stringify(payload, null, 2), "utf8");
+  } catch (e) {
+    console.warn("Could not save jobs to local disk (likely read-only Vercel environment). Only using Redis.");
+  }
 }
 
 async function loadJobs() {
@@ -888,7 +924,23 @@ export async function createRunJob(repo: RepoPayload, options?: RunJobOptions) {
   appendLog(job, "Job accepted into Run Cloud queue.");
   state.jobs.set(id, job);
   await saveJobs();
-  enqueueJob(id);
+
+  // Try Redis/BullMQ first; fall back to local in-process execution
+  await tryInitRedis();
+  if (redis && buildQueue) {
+    try {
+      await buildQueue.add("build", { githubUrl: repo.url, repoId: String(repo.id) });
+      await redis.set(`repo:${repo.id}:status`, "queued");
+      appendLog(job, "Enqueued to BullMQ/Redis cloud queue.");
+    } catch (err) {
+      console.warn("[run/store] BullMQ enqueue failed; falling back to local.", err);
+      enqueueJob(id);
+    }
+  } else {
+    // Local mode — clone + run directly in this process
+    enqueueJob(id);
+  }
+
   return snapshot(job);
 }
 
@@ -901,7 +953,44 @@ export async function getRunJob(id: string) {
 
 export async function listRunJobs() {
   await loadJobs();
-  return Array.from(state.jobs.values())
+
+  const jobsList = Array.from(state.jobs.values());
+
+  // If Redis is available, sync status from the cloud queue
+  if (redis) {
+    for (const job of jobsList) {
+      if (job.stage === "failed" || job.stage === "running") continue;
+      try {
+        const status = await redis.get(`repo:${job.repo.id}:status`);
+        const url = await redis.get(`repo:${job.repo.id}:url`);
+        let changed = false;
+
+        if (status === "running" && url) {
+          job.stage = "running";
+          job.appUrl = url;
+          job.health.status = "healthy";
+          appendLog(job, `Successfully deployed to ${url}`);
+          changed = true;
+        } else if (status === "failed") {
+          job.stage = "failed";
+          job.health.status = "degraded";
+          const realLogs = await redis.get(`repo:${job.repo.id}:logs`);
+          appendLog(job, realLogs ? `Deployment failed. Output: ${realLogs}` : "Deployment failed.");
+          changed = true;
+        } else if (status === "building" && job.stage !== "building") {
+          job.stage = "building";
+          appendLog(job, "Building via Nixpacks on Fly...");
+          changed = true;
+        }
+
+        if (changed) await saveJobs();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+
+  return jobsList
     .map((job) => snapshot(job))
     .sort((a, b) => b.createdAt - a.createdAt);
 }

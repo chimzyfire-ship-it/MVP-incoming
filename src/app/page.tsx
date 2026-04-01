@@ -85,15 +85,15 @@ interface RuntimeRunJob {
 
 function buildDiscoverSections(repos: Repo[]): DiscoverSection[] {
   const sectionDefinitions: Omit<DiscoverSection, "repos">[] = [
-    { id: "ai", title: "AI helpers", subtitle: "Chat with AI-made apps and automate small tasks." },
-    { id: "devtools", title: "Developer tools", subtitle: "Helpful command tools and automation for building." },
-    { id: "frontend", title: "Web builders", subtitle: "Apps you can use in your browser." },
-    { id: "backend", title: "Server apps", subtitle: "Apps that run in the background and power features." },
-    { id: "infra", title: "Cloud setup", subtitle: "Help for deploying and running apps." },
-    { id: "security", title: "Safety & privacy", subtitle: "Security features for safer apps and better protection." },
-    { id: "productivity", title: "Productivity tools", subtitle: "Useful daily tools and easier workflows." },
-    { id: "data", title: "Data & smart insights", subtitle: "Apps for data, charts, and smart predictions." },
-    { id: "creative", title: "Creative tools", subtitle: "Apps for images, video, design, and content." },
+    { id: "ai", title: "Smart helpers", subtitle: "Apps that can think, chat, and answer your questions — like a really clever friend." },
+    { id: "devtools", title: "Handy tools", subtitle: "Useful helpers that make hard things easy — think of them as power tools for your computer." },
+    { id: "frontend", title: "Websites you can try", subtitle: "Apps that open right in your browser — just like visiting any normal website." },
+    { id: "backend", title: "Behind-the-scenes workers", subtitle: "These run quietly in the background, doing the heavy lifting so other apps can work." },
+    { id: "infra", title: "Setup helpers", subtitle: "Tools that help put apps online and keep them running smoothly." },
+    { id: "security", title: "Safety and privacy", subtitle: "Things that keep your passwords, accounts, and private stuff safe." },
+    { id: "productivity", title: "Everyday helpers", subtitle: "Useful tools that make your daily life on a computer a little bit easier." },
+    { id: "data", title: "Numbers and charts", subtitle: "Apps that help you understand information by turning it into pictures and patterns." },
+    { id: "creative", title: "Creative stuff", subtitle: "Tools for making pictures, videos, sounds, and designs — the fun, artsy side of computers." },
   ];
 
   const buckets = new Map<string, Repo[]>();
@@ -127,7 +127,7 @@ function buildDiscoverSections(repos: Repo[]): DiscoverSection[] {
     sections.push({
       id: "discover",
       title: "More to explore",
-      subtitle: "New open-source apps you can try.",
+      subtitle: "Other free apps you might find useful or fun.",
       repos: fallbackRepos,
     });
   }
@@ -209,7 +209,10 @@ export default function Home() {
     async function fetchFeed() {
       setIsLoading(true);
       try {
-        const category = activeTab === "bookmarks" ? "discover" : activeTab;
+        const category =
+          activeTab === "bookmarks" ? "discover" :
+          activeTab === "runnable" ? "runnable" :
+          activeTab;
         const res = await fetch(`/api/trending?category=${category}`);
         if (!res.ok) throw new Error("Feed fetch failed");
         const data: Repo[] = await res.json();
@@ -316,6 +319,7 @@ export default function Home() {
     : activeTab === "feed" ? "Feed"
     : activeTab === "runtime" ? "Try Apps"
     : activeTab === "trending" ? "Popular now"
+    : activeTab === "runnable" ? "Easy to Run"
     : activeTab === "bookmarks" ? "Saved"
     : "Recently Viewed";
 
@@ -551,6 +555,32 @@ export default function Home() {
                   </div>
                 </div>
               </section>
+            )}
+
+            {activeTab === "runnable" && !isLoading && (
+              <div className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 p-5">
+                <div className="flex items-start gap-3">
+                  <Rocket className="mt-0.5 h-5 w-5 text-emerald-300" />
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Apps that actually run</h2>
+                    <p className="mt-1 text-sm text-zinc-300">
+                      These are handpicked repos that start up with a single command — no API keys, no database setup, no headaches. 
+                      Just tap <span className="font-semibold text-emerald-300">Run</span> and we handle the rest.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="text-xs rounded-full border border-white/10 bg-black/20 px-3 py-1 text-zinc-300">
+                        ✓ No API keys needed
+                      </span>
+                      <span className="text-xs rounded-full border border-white/10 bg-black/20 px-3 py-1 text-zinc-300">
+                        ✓ No database setup
+                      </span>
+                      <span className="text-xs rounded-full border border-white/10 bg-black/20 px-3 py-1 text-zinc-300">
+                        ✓ Opens in your browser
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {(isLoading || isSearching) && (

@@ -17,7 +17,7 @@ import {
   Flame,
   ChevronRight,
 } from "lucide-react";
-import { type Repo, getRepoBackdrop, getRepoCover } from "./RepoCard";
+import { type Repo, getRepoBackdrop } from "./RepoCard";
 import { summarizeRepoForBeginners } from "@/lib/repoSummary";
 
 interface MarketplaceViewProps {
@@ -67,22 +67,22 @@ function getInstalls(repo: Repo) {
 }
 
 const categories = [
-  { id: "all", label: "All", emoji: "🔥" },
-  { id: "ai", label: "AI & ML", emoji: "🤖" },
-  { id: "web", label: "Web Apps", emoji: "🌐" },
-  { id: "mobile", label: "Mobile", emoji: "📱" },
-  { id: "devtools", label: "DevTools", emoji: "🛠" },
-  { id: "data", label: "Data", emoji: "📊" },
-  { id: "creative", label: "Creative", emoji: "🎨" },
-  { id: "security", label: "Security", emoji: "🔒" },
-  { id: "cloud", label: "Cloud", emoji: "☁️" },
+  { id: "all", label: "Everything", emoji: "🔥" },
+  { id: "ai", label: "Smart helpers", emoji: "🤖" },
+  { id: "web", label: "Websites", emoji: "🌐" },
+  { id: "mobile", label: "Phone apps", emoji: "📱" },
+  { id: "devtools", label: "Handy tools", emoji: "🛠" },
+  { id: "data", label: "Numbers & charts", emoji: "📊" },
+  { id: "creative", label: "Creative stuff", emoji: "🎨" },
+  { id: "security", label: "Safety & privacy", emoji: "🔒" },
+  { id: "cloud", label: "Setup helpers", emoji: "☁️" },
 ];
 
 const collections = [
-  { name: "Build Your First Website", emoji: "🚀", count: 12 },
-  { name: "AI Starter Pack", emoji: "🤖", count: 8 },
-  { name: "Backend Essentials", emoji: "⚙️", count: 15 },
-  { name: "Data Science Toolkit", emoji: "📈", count: 10 },
+  { name: "Make your first website", emoji: "🚀", count: 12 },
+  { name: "Smart helpers you can talk to", emoji: "🤖", count: 8 },
+  { name: "Behind-the-scenes workers", emoji: "⚙️", count: 15 },
+  { name: "Play with numbers and charts", emoji: "📈", count: 10 },
 ];
 
 type SortOption = "popular" | "newest" | "price-low" | "price-high" | "stars";
@@ -313,7 +313,6 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {spotlightRepos.map((repo, idx) => {
                 const backdrop = getRepoBackdrop(repo);
-                const cover = getRepoCover(repo);
                 return (
                   <button
                     key={repo.id}
@@ -322,15 +321,7 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
                   >
                     <div className="relative aspect-[16/10] w-full overflow-hidden">
                       <Image src={backdrop} alt="" fill sizes="33vw" className="object-cover" />
-                      {cover && (
-                        <Image
-                          src={cover}
-                          alt={repo.title}
-                          fill
-                          sizes="33vw"
-                          className="object-cover opacity-25 mix-blend-screen transition-transform duration-500 group-hover:scale-105"
-                        />
-                      )}
+                      {/* Cover image previews removed — just the gradient backdrop */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
                         {idx === 0 ? "🏆 #1 Pick" : idx === 1 ? "⚡ Hot" : "✨ New"}

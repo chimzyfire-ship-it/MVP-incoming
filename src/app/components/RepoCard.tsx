@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { ArrowUpRight, Package, Play, Sparkles, Star } from "lucide-react";
-import { summarizeRepoForBeginners } from "@/lib/repoSummary";
+import { Package, Play, Sparkles, Star } from "lucide-react";
+import { friendlyCategoryLabel, summarizeRepoForBeginners } from "@/lib/repoSummary";
 
 export interface Repo {
   id: number;
@@ -16,6 +16,8 @@ export interface Repo {
   avatar?: string;
   coverImage?: string;
   topics?: string[];
+  /** True when the repo is known to start without API keys or a database */
+  easyToRun?: boolean;
 }
 
 interface RepoCardProps {
@@ -60,18 +62,11 @@ function escapeSvg(value: string) {
     .replace(/>/g, "&gt;");
 }
 
-export function getRepoCover(repo: Repo) {
-  if (repo.coverImage) return repo.coverImage;
-  if (repo.owner && repo.title) {
-    return `https://opengraph.githubassets.com/1/${repo.owner}/${repo.title}`;
-  }
-  return "";
-}
-
+/* Backdrop SVG for widget cards — no external images, just a beautiful gradient */
 export function getRepoBackdrop(repo: Repo) {
   const palette = getRepoPalette(repo);
-  const label = repo.language && repo.language !== "Unknown" ? repo.language : "Open Source";
-  const topic = repo.topics?.find(Boolean) || repo.owner || "Run instantly";
+  const label = friendlyCategoryLabel(repo);
+  const topic = repo.topics?.find(Boolean)?.replace(/-/g, " ") || repo.owner || "Try it free";
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
       <defs>
@@ -112,11 +107,9 @@ export function getRepoBackdrop(repo: Repo) {
 export default function RepoCard({ repo, showPrice = false, onRun, variant = "list" }: RepoCardProps) {
   const computedPrice = repo.stars > 100000 ? "$29.99" : repo.stars > 50000 ? "$19.99" : repo.stars > 10000 ? "$9.99" : "$0";
   const priceLabel = computedPrice === "$0" ? "Free" : `Get ${computedPrice}`;
-  const cover = getRepoCover(repo);
   const backdrop = getRepoBackdrop(repo);
   const palette = getRepoPalette(repo);
-  const eyebrow = repo.language && repo.language !== "Unknown" ? repo.language : "Open Source";
-  const secondaryTag = repo.topics?.find(Boolean) || repo.owner || "Featured";
+  const eyebrow = friendlyCategoryLabel(repo);
   const summary = summarizeRepoForBeginners(repo);
 
   if (variant === "widget") {
@@ -130,15 +123,6 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
           />
-          {cover ? (
-            <Image
-              src={cover}
-              alt={`${repo.title} preview`}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover opacity-30 mix-blend-screen saturate-[1.15] transition-transform duration-500 group-hover:scale-[1.04]"
-            />
-          ) : null}
           <div
             className="absolute inset-0"
             style={{
@@ -162,7 +146,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
                   </p>
                   {summary.goodForPills[0] ? (
                     <p className="mt-2 line-clamp-1 text-[11px] text-zinc-400">
-                      Good for: {summary.goodForPills[0]}
+                      ✦ {summary.goodForPills[0]}
                     </p>
                   ) : null}
                 </div>
@@ -181,9 +165,6 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
                   ) : (
                     <Package className="h-8 w-8 text-white/70" />
                   )}
-                </div>
-                <div className="hidden h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 backdrop-blur sm:flex">
-                  <ArrowUpRight className="h-5 w-5" />
                 </div>
               </div>
             </div>
@@ -206,11 +187,9 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-white">{repo.owner || "Open Source Studio"}</p>
                   <div className="mt-1 flex items-center gap-2 text-xs text-zinc-200/85">
-                    <span className="truncate">{secondaryTag}</span>
-                    <span className="h-1 w-1 rounded-full bg-white/50" />
                     <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-medium text-white/85">
                       <Star className="h-3 w-3 fill-current" />
-                      {repo.stars.toLocaleString()}
+                      {repo.stars.toLocaleString()} fans
                     </span>
                   </div>
                 </div>
@@ -258,7 +237,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
   }
 
   return (
-    <article className="group flex w-full items-center gap-4 border-b border-white/5 py-4 transition-all hover:bg-white/5 px-2 rounded-xl">
+    <article className="group flex w-full items-start gap-4 border-b border-white/5 py-4 transition-all hover:bg-white/5 px-2 rounded-xl">
       <div className="relative shrink-0 overflow-hidden squircle shadow-[0_2px_10px_rgba(0,0,0,0.5)] h-[88px] w-[88px] bg-black/40 border border-white/10 flex flex-col justify-center items-center">
         {repo.avatar ? (
           <Image
@@ -275,17 +254,26 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 justify-center h-full pt-1">
-        <h3 className="truncate text-[15px] font-semibold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
-          {repo.title}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="truncate text-[15px] font-semibold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+            {repo.title}
+          </h3>
+          {repo.easyToRun && (
+            <span className="shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 tracking-wide">
+              ✓ Easy to run
+            </span>
+          )}
+        </div>
         <p className="line-clamp-2 text-[13px] leading-snug text-zinc-400 mt-0.5">
           {summary.short}
         </p>
-        {summary.goodForPills[0] ? (
-          <p className="line-clamp-1 text-[11px] text-zinc-500 mt-1">
-            Good for: {summary.goodForPills[0]}
-          </p>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+          {summary.goodForPills.slice(0, 2).map((pill, i) => (
+            <span key={i} className="text-[10px] rounded-full border border-white/8 bg-white/[0.04] px-2 py-0.5 text-zinc-500">
+              ✦ {pill}
+            </span>
+          ))}
+        </div>
       </div>
 
       <div className="flex shrink-0 flex-col justify-center items-end gap-2 pl-2">

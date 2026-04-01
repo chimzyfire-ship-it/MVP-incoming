@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, LayoutGrid, Flame, Eye, Store, Rocket, Rss } from "lucide-react";
+import { Compass, LayoutGrid, Flame, Eye, Store, Rocket, Rss, Zap } from "lucide-react";
 import type { Tab } from "./Sidebar";
 
 interface MobileNavProps {
@@ -10,12 +10,13 @@ interface MobileNavProps {
 
 const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "discover", label: "Explore", icon: <Compass className="h-5 w-5" /> },
+  { id: "runnable", label: "Runnable", icon: <Zap className="h-5 w-5" /> },
   { id: "categories", label: "Types", icon: <LayoutGrid className="h-5 w-5" /> },
   { id: "shop", label: "Market", icon: <Store className="h-5 w-5" /> },
   { id: "feed", label: "Feed", icon: <Rss className="h-5 w-5" /> },
   { id: "runtime", label: "Try", icon: <Rocket className="h-5 w-5" /> },
   { id: "trending", label: "Popular", icon: <Flame className="h-5 w-5" /> },
-  { id: "viewed", label: "Recently", icon: <Eye className="h-5 w-5" /> },
+  { id: "viewed", label: "Recent", icon: <Eye className="h-5 w-5" /> },
 ];
 
 export default function MobileNav({ activeTab, onTabChange }: MobileNavProps) {

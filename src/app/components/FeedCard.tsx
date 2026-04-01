@@ -11,7 +11,6 @@ import {
   TrendingUp,
   Lightbulb,
   Star,
-  Video,
   Flame,
   X,
 } from "lucide-react";
@@ -32,11 +31,11 @@ interface FeedCardProps {
 function getAIContent(repo: Repo) {
   const summary = summarizeRepoForBeginners(repo);
   const hooks = [
-    `Ever wondered how ${repo.title} works? Here's the quick version.`,
-    `If you've never heard of ${repo.title}, you're missing out.`,
-    `${repo.title} is one of those tools that changes how you work.`,
-    `Here's why ${repo.owner || "developers"} built ${repo.title} — and why you should care.`,
-    `In 30 seconds: what ${repo.title} does and why it matters.`,
+    `Imagine you had a helper that could handle ${repo.title.toLowerCase().replace(/-/g, " ")} for you. That is basically what this is.`,
+    `Most people scroll past ${repo.title} without knowing what it does. Let us break it down for you in normal words.`,
+    `${repo.title} is like finding a really useful tool in a drawer you forgot about — once you try it, you wonder how you lived without it.`,
+    `Here is why ${repo.owner || "people"} built ${repo.title} — and why thousands of fans keep coming back to it.`,
+    `In plain English: ${repo.title} is something that makes a hard job easy. Here is the full scoop.`,
   ];
   const randomHook = hooks[repo.id % hooks.length];
   return { hook: randomHook, summary: summary.deep, short: summary.short };
@@ -44,11 +43,11 @@ function getAIContent(repo: Repo) {
 
 function getDidYouKnow(repo: Repo) {
   const facts = [
-    `${repo.title} has more than ${repo.stars.toLocaleString()} stars on GitHub — that's more popular than most apps in the App Store!`,
-    `The team behind ${repo.title} includes contributors from around the world, all building it together.`,
-    `${repo.title} is completely open-source — you can read every line of code and even contribute.`,
-    `If you run ${repo.title}, it sets up automatically — no terminal or coding knowledge needed.`,
-    `${repo.title} is used by developers at companies you've definitely heard of.`,
+    `${repo.title} has more than ${repo.stars.toLocaleString()} fans — that is more popular than most apps people pay money for! And this one is completely free.`,
+    `The people behind ${repo.title} come from all over the world. They have never met in person, but they work together online to build something useful for everyone.`,
+    `${repo.title} is free software — which means every single instruction that makes it work is open for anyone to read. No secrets, no hidden tricks.`,
+    `You can try ${repo.title} right now by tapping Run. We handle the setup — you just explore. No downloading, no installing, no headaches.`,
+    `Some of the biggest companies in the world use tools exactly like ${repo.title} behind the scenes. Now you can try it yourself, for free, in your web browser.`,
   ];
   return facts[repo.id % facts.length];
 }
@@ -56,12 +55,7 @@ function getDidYouKnow(repo: Repo) {
 function getTrendingCopy(repo: Repo) {
   const deltas = ["2.1K", "1.5K", "3.2K", "890", "1.8K", "4.1K"];
   const delta = deltas[repo.id % deltas.length];
-  return `${repo.title} gained ${delta} stars this week`;
-}
-
-function getVideoDuration() {
-  const durations = ["0:45", "1:12", "2:03", "1:38", "0:58", "3:15"];
-  return durations[Math.floor(Math.random() * durations.length)];
+  return `${repo.title} picked up ${delta} new fans this week — people are loving this one`;
 }
 
 /* ── Engagement Bar ── */
@@ -109,7 +103,7 @@ function EngagementBar({ repo, onRun }: { repo: Repo; onRun: () => void }) {
         }}
         className="flex h-[28px] items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 text-[11px] font-bold text-blue-400 transition-all hover:bg-blue-500/20"
       >
-        <Play className="h-3 w-3 fill-blue-400" /> Run it
+        <Play className="h-3 w-3 fill-blue-400" /> Try it now
       </button>
     </div>
   );
@@ -144,17 +138,17 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-white truncate">{repo.owner}</p>
-              <p className="text-[11px] text-zinc-500">via GITMURPH AI</p>
+              <p className="text-[11px] text-zinc-500">explained by Gitmurph</p>
             </div>
             <div className="flex items-center gap-1 rounded-full bg-blue-500/15 border border-blue-500/20 px-2.5 py-1">
               <Sparkles className="h-3 w-3 text-blue-300" />
-              <span className="text-[10px] font-semibold text-blue-300">AI Generated</span>
+              <span className="text-[10px] font-semibold text-blue-300">In plain words</span>
             </div>
           </div>
 
           <h3 className="text-[16px] font-bold text-white leading-snug mb-2">{repo.title}</h3>
           <p className="text-[14px] text-zinc-200 leading-relaxed mb-2">{ai.hook}</p>
-          <p className="text-[13px] text-zinc-400 leading-relaxed line-clamp-3">{ai.short}</p>
+          <p className="text-[13px] text-zinc-400 leading-relaxed line-clamp-4">{ai.short}</p>
 
           <EngagementBar repo={repo} onRun={onRun} />
         </div>
@@ -162,10 +156,9 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
     );
   }
 
-  /* ── Video Card ── */
+  /* ── Explainer Card (was "video" — now text-based, no fake video player) ── */
   if (variant === "video") {
     const backdrop = getRepoBackdrop(repo);
-    const duration = getVideoDuration();
 
     return (
       <article onClick={onView} className={cardClasses} style={cardStyle}>
@@ -178,22 +171,15 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-white truncate">{repo.owner}</p>
-              <p className="text-[11px] text-zinc-500">Explainer · {duration}</p>
+              <p className="text-[11px] text-zinc-500">Quick explainer</p>
             </div>
-            <Video className="h-4 w-4 text-zinc-500" />
+            <Sparkles className="h-4 w-4 text-zinc-500" />
           </div>
 
-          <div className="relative aspect-video w-full overflow-hidden bg-black/40">
+          {/* Gradient banner instead of fake video player */}
+          <div className="relative aspect-[3/1] w-full overflow-hidden bg-black/40">
             <Image src={backdrop} alt="" fill sizes="100%" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-md border border-white/20 transition-transform hover:scale-110">
-                <Play className="h-6 w-6 fill-white text-white ml-0.5" />
-              </div>
-            </div>
-            <div className="absolute bottom-3 right-3 rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
-              {duration}
-            </div>
             <div className="absolute bottom-3 left-3 flex items-center gap-2">
               <div className="rounded-md bg-black/50 px-2.5 py-1 text-[12px] font-semibold text-white backdrop-blur">
                 {repo.title}
@@ -202,8 +188,11 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
           </div>
 
           <div className="p-4 pt-3">
-            <h3 className="text-[15px] font-semibold text-white">How {repo.title} works — explained simply</h3>
-            <p className="text-[13px] text-zinc-400 mt-1 line-clamp-2">{summary.short}</p>
+            <h3 className="text-[15px] font-semibold text-white">What {repo.title} does — in plain words</h3>
+            <p className="text-[13px] text-zinc-400 mt-1 line-clamp-3">{summary.short}</p>
+            {summary.goodForPills[0] && (
+              <p className="text-[11px] text-zinc-500 mt-2">✦ {summary.goodForPills[0]}</p>
+            )}
             <EngagementBar repo={repo} onRun={onRun} />
           </div>
         </div>
@@ -218,12 +207,12 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
     return (
       <article onClick={onView} className={cardClasses} style={cardStyle}>
         <div className="relative overflow-hidden">
-          <div className="relative aspect-[2/1] w-full overflow-hidden">
+          <div className="relative aspect-[2.5/1] w-full overflow-hidden">
             <Image src={backdrop} alt="" fill sizes="100%" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#042a33] via-[#042a33]/50 to-transparent" />
             <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-500/30 to-orange-500/20 border border-yellow-500/30 px-3 py-1 backdrop-blur">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span className="text-[11px] font-bold text-yellow-200">App of the Day</span>
+              <span className="text-[11px] font-bold text-yellow-200">Pick of the day</span>
             </div>
           </div>
           <div className="p-5 -mt-10 relative">
@@ -239,6 +228,15 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
               </div>
             </div>
             <p className="text-[14px] text-zinc-300 leading-relaxed">{summary.short}</p>
+            {summary.goodForPills.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {summary.goodForPills.slice(0, 2).map((pill, i) => (
+                  <span key={i} className="text-[10px] rounded-full border border-white/8 bg-white/[0.04] px-2 py-0.5 text-zinc-500">
+                    ✦ {pill}
+                  </span>
+                ))}
+              </div>
+            )}
             <EngagementBar repo={repo} onRun={onRun} />
           </div>
         </div>
@@ -260,16 +258,17 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="h-3.5 w-3.5 text-orange-400" />
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-400">Trending</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-orange-400">Getting popular fast</span>
               </div>
               <p className="text-[14px] font-semibold text-white">{copy}</p>
+              <p className="text-[12px] text-zinc-400 mt-1.5 leading-relaxed line-clamp-2">{summary.short}</p>
               <div className="flex items-center gap-2 mt-2">
                 <div className="h-6 w-6 overflow-hidden rounded-full border border-white/10 bg-black/30">
                   {repo.avatar && (
                     <Image src={repo.avatar} alt={repo.owner || ""} width={24} height={24} className="h-full w-full object-cover" />
                   )}
                 </div>
-                <span className="text-[12px] text-zinc-400">{repo.owner}/{repo.title}</span>
+                <span className="text-[12px] text-zinc-400">{repo.owner} / {repo.title}</span>
                 <span className="text-[12px] text-zinc-500">· {repo.stars.toLocaleString()} ★</span>
               </div>
             </div>
@@ -291,7 +290,7 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/15 border border-violet-500/20">
               <Lightbulb className="h-4 w-4 text-violet-300" />
             </div>
-            <span className="text-[12px] font-semibold text-violet-300 uppercase tracking-wider">Did You Know?</span>
+            <span className="text-[12px] font-semibold text-violet-300 uppercase tracking-wider">Fun fact</span>
           </div>
           <p className="text-[14px] text-zinc-200 leading-relaxed mb-3">{fact}</p>
           <div className="flex items-center gap-3">
@@ -314,7 +313,7 @@ export default function FeedCard({ repo, variant, index, onView, onRun }: FeedCa
   return null;
 }
 
-/* ── Video Story Circle (for the stories bar) ── */
+/* ── Story Circle (for the stories bar) ── */
 export function StoryCircle({
   repo,
   isActive,
@@ -408,13 +407,16 @@ export function StoryOverlay({
         {/* Content */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h2 className="text-2xl font-bold text-white mb-2">{repo.title}</h2>
-          <p className="text-[14px] text-zinc-200 leading-relaxed mb-4 line-clamp-4">{summary.short}</p>
+          <p className="text-[14px] text-zinc-200 leading-relaxed mb-2 line-clamp-4">{summary.short}</p>
+          {summary.goodForPills[0] && (
+            <p className="text-[11px] text-zinc-400 mb-3">✦ {summary.goodForPills[0]}</p>
+          )}
           <div className="flex items-center gap-3">
             <button
               onClick={onRun}
               className="flex h-[42px] flex-1 items-center justify-center gap-2 rounded-full bg-blue-500 font-bold text-white text-[15px] transition-all hover:bg-blue-400 active:scale-95"
             >
-              <Play className="h-4 w-4 fill-white" /> Run this app
+              <Play className="h-4 w-4 fill-white" /> Try this app
             </button>
             <button className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-white/10 text-white backdrop-blur border border-white/10">
               <Heart className="h-5 w-5" />

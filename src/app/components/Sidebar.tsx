@@ -1,8 +1,9 @@
 "use client";
 
-import { Star, LayoutGrid, Flame, Eye, Bookmark, Settings, Search, User, Store, Rocket, Rss } from "lucide-react";
+import { Star, LayoutGrid, Flame, Eye, Bookmark, Settings, Search, User, Store, Rocket, Rss, Zap } from "lucide-react";
 
-export type Tab = "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "viewed" | "bookmarks" | "settings";
+export type Tab = "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "runnable" | "viewed" | "bookmarks" | "settings";
+
 
 interface SidebarProps {
   activeTab: Tab;
@@ -54,6 +55,11 @@ export default function Sidebar({
       label: "Popular now",
       id: "trending" as Tab,
       icon: <Flame className={getIconClass("trending")} />,
+    },
+    {
+      label: "Easy to Run",
+      id: "runnable" as Tab,
+      icon: <Zap className={getIconClass("runnable")} />,
     },
     {
       label: "Recently Viewed",
