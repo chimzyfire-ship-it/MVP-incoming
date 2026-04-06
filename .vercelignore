@@ -1,0 +1,4 @@
+node_modules
+.next
+.os-layer
+build-engine
