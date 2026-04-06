@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, FormEvent, useMemo, useCallback } from "react";
-import { Search, Loader2, Bookmark, Eye, Rocket, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer } from "lucide-react";
+import { Search, Loader2, Bookmark, Eye, Rocket, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer, Trash2, Sparkles, UserPlus } from "lucide-react";
 
 import Sidebar, { Tab } from "./components/Sidebar";
 import MobileNav from "./components/MobileNav";
@@ -12,6 +12,8 @@ import SettingsPanel from "./components/SettingsPanel";
 import RepoDetails from "./components/RepoDetails";
 import MarketplaceView from "./components/MarketplaceView";
 import FeedView from "./components/FeedView";
+import { useAuth } from "./context/AuthContext";
+import { INTEREST_CATEGORIES } from "./components/AuthModal";
 
 function getLocalRepos(key: string): Repo[] {
   if (typeof window === "undefined") return [];
@@ -83,18 +85,49 @@ interface RuntimeRunJob {
   logs: string[];
 }
 
-function buildDiscoverSections(repos: Repo[]): DiscoverSection[] {
-  const sectionDefinitions: Omit<DiscoverSection, "repos">[] = [
-    { id: "ai", title: "Smart helpers", subtitle: "Apps that can think, chat, and answer your questions — like a really clever friend." },
-    { id: "devtools", title: "Handy tools", subtitle: "Useful helpers that make hard things easy — think of them as power tools for your computer." },
-    { id: "frontend", title: "Websites you can try", subtitle: "Apps that open right in your browser — just like visiting any normal website." },
-    { id: "backend", title: "Behind-the-scenes workers", subtitle: "These run quietly in the background, doing the heavy lifting so other apps can work." },
-    { id: "infra", title: "Setup helpers", subtitle: "Tools that help put apps online and keep them running smoothly." },
-    { id: "security", title: "Safety and privacy", subtitle: "Things that keep your passwords, accounts, and private stuff safe." },
-    { id: "productivity", title: "Everyday helpers", subtitle: "Useful tools that make your daily life on a computer a little bit easier." },
-    { id: "data", title: "Numbers and charts", subtitle: "Apps that help you understand information by turning it into pictures and patterns." },
-    { id: "creative", title: "Creative stuff", subtitle: "Tools for making pictures, videos, sounds, and designs — the fun, artsy side of computers." },
+function buildDiscoverSections(repos: Repo[], level: import("@/lib/repoSummary").SkillLevel = "beginner"): DiscoverSection[] {
+  type SectionDef = { id: string; title: string; subtitle: string };
+
+  const beginnerDefs: SectionDef[] = [
+    { id: "ai",          title: "Smart helpers",             subtitle: "Apps that can think, chat, and answer your questions — like a really clever friend." },
+    { id: "devtools",    title: "Handy tools",               subtitle: "Useful helpers that make hard things easy — think of them as power tools for your computer." },
+    { id: "frontend",   title: "Websites you can try",       subtitle: "Apps that open right in your browser — just like visiting any normal website." },
+    { id: "backend",    title: "Behind-the-scenes workers",  subtitle: "These run quietly in the background, doing the heavy lifting so other apps can work." },
+    { id: "infra",      title: "Setup helpers",              subtitle: "Tools that help put apps online and keep them running smoothly." },
+    { id: "security",   title: "Safety and privacy",         subtitle: "Things that keep your passwords, accounts, and private stuff safe." },
+    { id: "productivity",title: "Everyday helpers",          subtitle: "Useful tools that make your daily life on a computer a little bit easier." },
+    { id: "data",       title: "Numbers and charts",          subtitle: "Apps that help you understand information by turning it into pictures and patterns." },
+    { id: "creative",   title: "Creative stuff",             subtitle: "Tools for making pictures, videos, sounds, and designs — the fun, artsy side of computers." },
   ];
+
+  const intermediateDefs: SectionDef[] = [
+    { id: "ai",          title: "AI-powered apps",           subtitle: "Apps that use AI or language models — chatbots, assistants, and smart tools." },
+    { id: "devtools",    title: "Developer tools",           subtitle: "CLIs, SDKs, linters, and build tools — things that speed up your workflow." },
+    { id: "frontend",   title: "Web apps & UIs",             subtitle: "Frontend projects built with React, Vue, Next.js, and more — run them in your browser." },
+    { id: "backend",    title: "APIs & backend services",   subtitle: "Server-side apps, REST/GraphQL APIs, and microservices." },
+    { id: "infra",      title: "DevOps & cloud tools",       subtitle: "Docker, Kubernetes, Terraform, CI/CD — infrastructure and deployment tooling." },
+    { id: "security",   title: "Security & auth",            subtitle: "Authentication flows, OAuth, encryption, and privacy tooling." },
+    { id: "productivity",title: "Everyday utilities",        subtitle: "Scripts, dashboards, and tools that automate or simplify daily tasks." },
+    { id: "data",       title: "Data & analytics",           subtitle: "Data pipelines, dashboards, ML models, and analytics — make sense of numbers." },
+    { id: "creative",   title: "Creative & media tools",    subtitle: "Image editors, audio processors, generative art, and design utilities." },
+  ];
+
+  const expertDefs: SectionDef[] = [
+    { id: "ai",          title: "AI / LLM",                  subtitle: "LLM integrations, agent frameworks, embedding pipelines, RAG systems." },
+    { id: "devtools",    title: "Dev tooling",               subtitle: "CLIs, language servers, build systems, testing frameworks, code generators." },
+    { id: "frontend",   title: "Frontend / SSR",             subtitle: "React, Vue, Svelte, Next.js, Astro — component libraries and SSR starters." },
+    { id: "backend",    title: "Backend / API",              subtitle: "REST, GraphQL, gRPC, WebSocket servers. Node, Go, Python, Rust runtimes." },
+    { id: "infra",      title: "Infra / DevOps",             subtitle: "Kubernetes operators, Terraform modules, Helm charts, CI/CD pipelines." },
+    { id: "security",   title: "Security / Auth",            subtitle: "OAuth2, OIDC, JWT libs, crypto primitives, pentest tooling, VPN." },
+    { id: "productivity",title: "Utilities / scripts",       subtitle: "Automation scripts, TUI tools, shell helpers, productivity hacks." },
+    { id: "data",       title: "Data / ML / Analytics",      subtitle: "Pandas, Spark, DuckDB, model training, vector stores, observability." },
+    { id: "creative",   title: "Media / creative",           subtitle: "Image/video processing, audio synthesis, generative art, codec tooling." },
+  ];
+
+  const sectionDefinitions =
+    level === "expert" ? expertDefs
+    : level === "intermediate" ? intermediateDefs
+    : beginnerDefs;
 
   const buckets = new Map<string, Repo[]>();
   sectionDefinitions.forEach((section) => buckets.set(section.id, []));
@@ -136,6 +169,7 @@ function buildDiscoverSections(repos: Repo[]): DiscoverSection[] {
 }
 
 export default function Home() {
+  const { user, openAuthModal, pendingRunRepo } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("discover");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Repo[]>([]);
@@ -154,11 +188,11 @@ export default function Home() {
     if (typeof window === "undefined") return;
     try {
       const seen = localStorage.getItem("os-layer-onboarding-seen");
-      setShowOnboarding(!seen);
+      setShowOnboarding(!seen && !user);
     } catch {
       setShowOnboarding(false);
     }
-  }, []);
+  }, [user]);
 
   function dismissOnboarding() {
     setShowOnboarding(false);
@@ -168,6 +202,14 @@ export default function Home() {
       // ignore
     }
   }
+
+  // After sign-up: if there was a pending run repo, execute it automatically
+  useEffect(() => {
+    if (user && pendingRunRepo) {
+      handleRunRepo(pendingRunRepo as Repo);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     setSelectedRepo(null); 
@@ -307,6 +349,20 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function handleDeleteRunJob(jobId: string) {
+    setIsRunQueueLoading(true);
+    try {
+      await fetch(`/api/run/${jobId}`, {
+        method: "DELETE",
+      });
+      await fetchRunJobs();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRunQueueLoading(false);
+    }
+  }
+
   const isInSearchMode = searchQuery.trim().length > 0 && searchResults.length > 0;
   const displayRepos = isInSearchMode ? searchResults : feedRepos;
   const showFeed = activeTab !== "settings";
@@ -327,8 +383,33 @@ export default function Home() {
   const listRepos = activeTab === "discover" && !isInSearchMode ? feedRepos.slice(8) : displayRepos;
   const visibleRepos = showAllRepos ? listRepos : listRepos.slice(0, 32);
   const categorizedGroups = groupReposByCategory(displayRepos);
-  const discoverSections = useMemo(() => buildDiscoverSections(feedRepos), [feedRepos]);
+  const discoverSections = useMemo(() => buildDiscoverSections(feedRepos, user?.skillLevel ?? "beginner"), [feedRepos, user?.skillLevel]);
   const canShowSeeAll = listRepos.length > 32;
+
+  // ── For You: filter discover sections by user's interest categories ──
+  const forYouRepos = useMemo(() => {
+    if (!user || user.interests.length === 0) return [];
+    // Collect section IDs the user cares about
+    const wantedSections = new Set<string>();
+    user.interests.forEach((interestId) => {
+      const cat = INTEREST_CATEGORIES.find((c) => c.id === interestId);
+      cat?.sectionIds.forEach((sid) => wantedSections.add(sid));
+    });
+    // Find matching repos across all discover sections
+    const seen = new Set<number>();
+    const results: Repo[] = [];
+    discoverSections.forEach((section) => {
+      if (wantedSections.has(section.id)) {
+        section.repos.forEach((repo) => {
+          if (!seen.has(repo.id)) {
+            seen.add(repo.id);
+            results.push(repo);
+          }
+        });
+      }
+    });
+    return results.slice(0, 12);
+  }, [user, discoverSections]);
 
   return (
     <>
@@ -365,7 +446,47 @@ export default function Home() {
               </h1>
             </header>
 
-            {showOnboarding && activeTab !== "runtime" && (
+            {/* ── Massive Guest Sign-Up Hero ── */}
+            {!user && activeTab === "discover" && !isInSearchMode && (
+              <div className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-[#0a192f]/80 to-[#042a33]/90 px-6 py-12 sm:px-12 sm:py-16 shadow-2xl isolate">
+                {/* Background glowing orbs */}
+                <div className="absolute -top-24 -left-20 h-64 w-64 rounded-full bg-blue-500/20 blur-[80px] pointer-events-none" />
+                <div className="absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-[0_0_40px_rgba(59,130,246,0.4)]">
+                    <span className="text-4xl font-black text-white">G</span>
+                  </div>
+                  
+                  <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+                    Discover open-source apps. <br className="hidden sm:block" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                      Run them instantly.
+                    </span>
+                  </h2>
+                  
+                  <p className="mb-8 max-w-2xl text-base text-zinc-300 sm:text-lg">
+                    Join Gitmurph to explore hand-picked tools, games, and smart helpers. No setup, no coding experience required. Just tap Run and enjoy.
+                  </p>
+                  
+                  <button
+                    onClick={() => openAuthModal("signup_prompt")}
+                    className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300 hover:scale-105 hover:bg-blue-400 hover:shadow-[0_0_60px_rgba(59,130,246,0.7)]"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      <UserPlus className="h-5 w-5" />
+                      Sign up for free
+                    </span>
+                    <div className="absolute inset-0 z-0 h-full w-full bg-gradient-to-r from-blue-600 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  </button>
+                  
+                  <p className="mt-4 text-xs text-zinc-500">Takes less than 30 seconds. No credit card required.</p>
+                </div>
+              </div>
+            )}
+
+            {/* ── Original onboarding banner (guests only) ── */}
+            {showOnboarding && !user && activeTab !== "runtime" && false && (
               <div className="rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 sm:px-5 sm:py-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 h-9 w-9 rounded-xl bg-black/25 border border-white/10 flex items-center justify-center">
@@ -518,35 +639,44 @@ export default function Home() {
                             </details>
                             <div className="flex items-center justify-between gap-3">
                               <p className="truncate text-[11px] text-zinc-500">We&apos;re setting this up in the background.</p>
-                              {job.appUrl ? (
+                              <div className="flex items-center gap-2">
                                 <button
-                                  onClick={() => window.open(job.appUrl as string, "_blank")}
-                                  className="shrink-0 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-300"
+                                  onClick={() => handleDeleteRunJob(job.id)}
+                                  className="shrink-0 rounded-full border border-zinc-400/20 bg-zinc-500/10 px-3 py-1.5 text-xs font-semibold text-zinc-400 hover:bg-zinc-500/20 transition-colors"
+                                  title="Stop and Delete"
                                 >
-                                  Open app
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </button>
-                              ) : job.stage === "failed" ? (
-                                <button
-                                  onClick={async () => {
-                                    setIsRunQueueLoading(true);
-                                    try {
-                                      await fetch("/api/run", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ repo: job.repo }),
-                                      });
-                                      await fetchRunJobs();
-                                    } finally {
-                                      setIsRunQueueLoading(false);
-                                    }
-                                  }}
-                                  className="shrink-0 rounded-full border border-rose-400/40 bg-rose-500/15 px-3 py-1.5 text-xs font-semibold text-rose-200"
-                                >
-                                  Try again
-                                </button>
-                              ) : (
-                                <span className="text-[11px] text-zinc-500">Waiting for the app to be ready…</span>
-                              )}
+                                {job.appUrl ? (
+                                  <button
+                                    onClick={() => window.open(job.appUrl as string, "_blank")}
+                                    className="shrink-0 rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-colors"
+                                  >
+                                    Open app
+                                  </button>
+                                ) : job.stage === "failed" ? (
+                                  <button
+                                    onClick={async () => {
+                                      setIsRunQueueLoading(true);
+                                      try {
+                                        await fetch("/api/run", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ repo: job.repo }),
+                                        });
+                                        await fetchRunJobs();
+                                      } finally {
+                                        setIsRunQueueLoading(false);
+                                      }
+                                    }}
+                                    className="shrink-0 rounded-full border border-rose-400/40 bg-rose-500/15 px-3 py-1.5 text-xs font-semibold text-rose-200 hover:bg-rose-500/25 transition-colors"
+                                  >
+                                    Try again
+                                  </button>
+                                ) : (
+                                  <span className="text-[11px] text-zinc-500">Waiting for the app to be ready…</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -595,7 +725,33 @@ export default function Home() {
             {!isLoading && !isSearching && displayRepos.length > 0 && activeTab !== "runtime" && activeTab !== "shop" && activeTab !== "feed" && (
               <div className="flex flex-col gap-12">
                 
-                {activeTab === "discover" && !isInSearchMode && (
+                {/* ── For You Section ── */}
+              {activeTab === "discover" && !isInSearchMode && user && forYouRepos.length > 0 && (
+                <section className="flex flex-col gap-4">
+                  <div className="flex items-end justify-between gap-4 pl-1">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-blue-400" />
+                        <h2 className="text-xl font-bold tracking-tight text-white">
+                          For you, {user.name.split(" ")[0]} 👋
+                        </h2>
+                      </div>
+                      <p className="text-sm text-zinc-400">
+                        Handpicked based on your interests — {user.interests.length} categor{user.interests.length === 1 ? "y" : "ies"} selected
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
+                    {forYouRepos.map((repo) => (
+                      <div key={repo.id} onClick={() => handleRepoView(repo)} className="cursor-pointer">
+                        <RepoCard repo={repo} onRun={handleRunRepo} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {activeTab === "discover" && !isInSearchMode && (
                   <div className="flex flex-col gap-10">
                     {discoverSections.map((section) => {
                       const isExpanded = !!expandedSections[section.id];

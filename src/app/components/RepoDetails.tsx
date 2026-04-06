@@ -4,20 +4,25 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
-  ChevronRight,
   Heart,
-  Monitor,
   Star,
   Globe,
   Shield,
   BookOpen,
   Users,
   Sparkles,
-  Cpu,
+  Play,
+  X,
+  ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
 
 import { type Repo } from "./RepoCard";
 import { buildLongBeginnerStory, friendlyCategoryLabel } from "@/lib/repoSummary";
+import { useAuth } from "../context/AuthContext";
+import { getRepoBackdrop, getRepoPalette } from "./RepoCard";
+import { useSkillLevel } from "../hooks/useSkillLevel";
 
 interface RepoDetailsProps {
   repo: Repo;
@@ -32,18 +37,52 @@ function formatLikes(n: number) {
   return String(n);
 }
 
+// Friendly plain-English names for tech stack items
+const TECH_PLAIN: Record<string, { label: string; icon: string }> = {
+  "typescript":  { label: "Typed scripting language",    icon: "🔷" },
+  "javascript":  { label: "Web scripting language",      icon: "🟡" },
+  "python":      { label: "Beginner-friendly language",  icon: "🐍" },
+  "rust":        { label: "Super fast system language",  icon: "🦀" },
+  "go":          { label: "Speed-focused language",      icon: "🐹" },
+  "java":        { label: "Cross-platform language",     icon: "☕" },
+  "next.js":     { label: "Website builder",             icon: "▲" },
+  "react":       { label: "Interactive UI builder",      icon: "⚛️" },
+  "vue":         { label: "Friendly UI framework",       icon: "💚" },
+  "angular":     { label: "Full-featured UI toolkit",   icon: "🔴" },
+  "svelte":      { label: "Fast UI framework",           icon: "🔥" },
+  "tailwind css":{ label: "Visual styling tool",         icon: "💨" },
+  "node.js":     { label: "Server-side JavaScript",      icon: "🟢" },
+  "express":     { label: "Simple web server",           icon: "🚂" },
+  "django":      { label: "Python web framework",        icon: "🎸" },
+  "laravel":     { label: "PHP web framework",           icon: "🎭" },
+};
+
+function friendlyTech(tech: string) {
+  const key = tech.toLowerCase();
+  return TECH_PLAIN[key] ?? { label: tech, icon: "🔩" };
+}
+
 export default function RepoDetails({
   repo,
   showShopActions = false,
   onRun,
   onClose,
 }: RepoDetailsProps) {
+  const { user, openAuthModal } = useAuth();
+  const skillLevel = useSkillLevel();
   const [expanded, setExpanded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [likes, setLikes] = useState(repo.stars || 0);
+  const [showIframe, setShowIframe] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const story = useMemo(() => buildLongBeginnerStory(repo), [repo]);
-  const category = friendlyCategoryLabel(repo);
+  const githubPath = useMemo(() => {
+    if (!repo.url) return `${repo.owner}/${repo.title}`;
+    return repo.url.replace(/^https?:\/\/(www\.)?github\.com\//i, "");
+  }, [repo.url, repo.owner, repo.title]);
+
+  const story = useMemo(() => buildLongBeginnerStory(repo, skillLevel), [repo, skillLevel]);
+  const category = friendlyCategoryLabel(repo, skillLevel);
   const fullText = useMemo(() => story.paragraphs.join("\n\n"), [story.paragraphs]);
   const previewLength = 700;
   const needsMore = fullText.length > previewLength;
@@ -61,9 +100,9 @@ export default function RepoDetails({
   }, [repo.stars]);
 
   const techStack = useMemo(() => {
-    const identified = [];
+    const identified: string[] = [];
     const t = (repo.topics || []).join(" ").toLowerCase();
-    
+
     if (t.includes("next")) identified.push("Next.js");
     else if (t.includes("react")) identified.push("React");
     else if (t.includes("vue")) identified.push("Vue");
@@ -75,15 +114,17 @@ export default function RepoDetails({
     if (t.includes("express")) identified.push("Express");
     if (t.includes("django")) identified.push("Django");
     if (t.includes("laravel")) identified.push("Laravel");
-    
-    // Add primary language
+
     const lang = repo.language && repo.language !== "Unknown" ? repo.language : null;
-    if (lang && !identified.some(i => i.toLowerCase() === lang.toLowerCase())) {
-        identified.push(lang);
+    if (lang && !identified.some((i) => i.toLowerCase() === lang.toLowerCase())) {
+      identified.push(lang);
     }
-    
+
     return identified.length > 0 ? identified : ["Standard codebase"];
   }, [repo.topics, repo.language]);
+
+  const backdrop = useMemo(() => getRepoBackdrop(repo), [repo]);
+  const palette = useMemo(() => getRepoPalette(repo), [repo]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -109,195 +150,301 @@ export default function RepoDetails({
         /* keep local */
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [repo.owner, repo.title]);
 
-  return (
-    <div className="min-h-screen bg-black text-white antialiased">
-      {/* Sticky top bar */}
-      <header
-        className={`sticky top-0 z-40 transition-colors duration-200 ${
-          scrolled ? "border-b border-white/10 bg-black/85 backdrop-blur-xl" : "bg-transparent"
-        }`}
-      >
-        <div className="mx-auto flex h-12 max-w-2xl items-center justify-between px-3 sm:h-14">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-200 hover:bg-white/10"
-            aria-label="Back"
-          >
-            <ChevronLeft className="h-6 w-6" strokeWidth={2.25} />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-sm" />
-            <span className="text-[15px] font-semibold tracking-tight">Gitmurph</span>
-          </div>
-          <div className="w-10" aria-hidden />
-        </div>
-      </header>
+  function handleRun() {
+    if (!user) {
+      openAuthModal("run_gate", repo);
+      return;
+    }
+    if (showShopActions) {
+      window.open(repo.url, "_blank");
+      return;
+    }
+    setShowIframe(true);
+  }
 
-      <main className="mx-auto max-w-2xl px-4 pb-24 pt-2 sm:px-5">
-        {/* Hero */}
-        <section className="border-b border-white/10 pb-8">
-          <div className="flex gap-4">
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.35)] sm:h-32 sm:w-32">
-              {repo.avatar ? (
-                <Image
-                  src={repo.avatar}
-                  alt=""
-                  fill
-                  sizes="128px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-zinc-500">
-                  {repo.title?.slice(0, 1) || "?"}
+  function handleCopyLink() {
+    navigator.clipboard.writeText(repo.url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  // Rating derived from likes
+  const rating = likes > 50000 ? "4.9" : likes > 10000 ? "4.7" : likes > 1000 ? "4.5" : "4.2";
+
+  return (
+    <>
+      {showIframe && githubPath && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl">
+          <div className="flex min-h-[56px] items-center justify-between border-b border-white/10 bg-black px-4 py-2">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20">
+                <Sparkles className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white">Running natively</h3>
+                <p className="text-[11px] text-zinc-400 leading-none mt-0.5">Powered by CodeSandbox</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowIframe(false)}
+              className="rounded-full bg-white/5 p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex-1 w-full bg-[#151515]">
+            <iframe
+              src={`https://codesandbox.io/p/github/${githubPath}?embed=1&theme=dark&view=preview`}
+              className="h-full w-full border-none"
+              allow="clipboard-read; clipboard-write; cross-origin-isolated; display-capture; geolocation; microphone; midi; payment; sync-xhr; camera; xr-spatial-tracking; fullscreen"
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-[#042a33] text-white antialiased">
+
+        {/* ─── Sticky Header ─── */}
+        <header
+          className={`sticky top-0 z-40 transition-all duration-200 ${
+            scrolled ? "border-b border-white/10 bg-[#031d24]/90 backdrop-blur-xl" : "bg-transparent"
+          }`}
+        >
+          <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/10 hover:text-white"
+              aria-label="Back"
+            >
+              <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
+              <span className="font-medium">Back</span>
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 shadow-sm" />
+              <span className="text-[15px] font-bold tracking-tight">Gitmurph</span>
+            </div>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-2 text-xs text-zinc-400 transition hover:bg-white/10 hover:text-zinc-200"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? "Copied!" : "Share"}
+            </button>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-2xl px-4 pb-28 pt-2">
+
+          {/* ─── Hero Banner ─── */}
+          <section className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+            {/* Backdrop */}
+            <div className="absolute inset-0">
+              <Image src={backdrop} alt="" fill className="object-cover opacity-60" sizes="672px" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#042a33]/60 to-[#042a33]" />
+            </div>
+
+            {/* Content */}
+            <div className="relative px-5 pt-12 pb-6 sm:px-7 sm:pt-16">
+              <span
+                className="mb-3 inline-block rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-white/80 backdrop-blur-sm"
+              >
+                {category}
+              </span>
+
+              <div className="flex items-end gap-4">
+                {/* Icon */}
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] sm:h-24 sm:w-24">
+                  {repo.avatar ? (
+                    <Image src={repo.avatar} alt="" fill sizes="96px" className="object-cover" />
+                  ) : (
+                    <div
+                      className="flex h-full w-full items-center justify-center text-3xl font-black"
+                      style={{ background: `linear-gradient(135deg, ${palette.primary}33, ${palette.secondary}66)` }}
+                    >
+                      {repo.title?.slice(0, 1) || "?"}
+                    </div>
+                  )}
                 </div>
+
+                <div className="min-w-0 flex-1 pb-1">
+                  <h1 className="text-[1.7rem] font-bold leading-tight tracking-tight text-white sm:text-[2rem]">
+                    {repo.title}
+                  </h1>
+                  <p className="mt-1 text-[14px] text-zinc-400">
+                    By <span className="text-zinc-300 font-medium">{repo.owner || "the open community"}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA row */}
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRun}
+                  className="inline-flex min-h-[50px] min-w-[150px] items-center justify-center gap-2.5 rounded-2xl px-8 text-[16px] font-bold tracking-wide text-white transition-all active:scale-[0.97]"
+                  style={{
+                    background: `linear-gradient(135deg, ${palette.primary}, ${palette.secondary})`,
+                    boxShadow: `0 6px 24px ${palette.glow}44`,
+                  }}
+                >
+                  {!user ? (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Sign up to run
+                    </>
+                  ) : showShopActions ? (
+                    <>
+                      <ExternalLink className="h-4 w-4" />
+                      View project
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 fill-white" />
+                      Run this app
+                    </>
+                  )}
+                </button>
+
+                <a
+                  href={repo.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-[50px] items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 text-sm font-semibold text-zinc-300 backdrop-blur-md transition hover:bg-white/10 hover:text-white"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Source code
+                </a>
+              </div>
+
+              {!user && (
+                <p className="mt-3 text-[12px] text-zinc-500">
+                  Free account needed to run apps — takes 30 seconds.
+                </p>
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight sm:text-3xl">
-                {repo.title}
-              </h1>
-              <p className="mt-1 text-[15px] text-zinc-400">By {repo.owner || "the open community"}</p>
-              <p className="mt-2 text-[13px] leading-snug text-zinc-500">
-                {category} · Free to try · Nothing to install on your computer
-              </p>
-            </div>
-          </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (showShopActions) {
-                  window.open(repo.url, "_blank");
-                  return;
-                }
-                onRun(repo);
-              }}
-              className="inline-flex min-h-[48px] min-w-[140px] items-center justify-center rounded-full bg-blue-500 px-10 text-[17px] font-bold tracking-wide text-white shadow-[0_6px_20px_rgba(59,130,246,0.4)] transition hover:bg-blue-400 active:scale-[0.98]"
-            >
-              {showShopActions ? "GET" : "RUN"}
-            </button>
-            {showShopActions ? (
-              <span className="text-xs text-zinc-500">Opens the project page so you can see more</span>
-            ) : (
-              <span className="text-xs text-zinc-500">We handle all the setup — you just explore</span>
-            )}
-          </div>
-        </section>
+          </section>
 
-        {/* Stats row */}
-        <section className="border-b border-white/10 py-4">
-          <div className="-mx-4 flex snap-x snap-mandatory gap-0 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-            <StatCell
-              label="People love it"
-              sub="Stars from fans"
-              value={likes > 0 ? `4.5` : "—"}
-              icon={<Star className="h-4 w-4 fill-amber-400 text-amber-400" />}
-            />
-            <StatDivider />
-            <StatCell label="Type" sub="What kind of thing it is" value={category} />
-            <StatDivider />
-            <StatCell label="For everyone" sub="No age limit" value="All ages" />
-            <StatDivider />
-            <StatCell label="Fans" sub="People who saved a star" value={formatLikes(likes)} />
-            <StatDivider />
-            <StatCell label="Size" sub="Roughly this big" value={sizeLabel} />
-          </div>
-        </section>
-
-        {/* Smart Tech Stack Analysis */}
-        <section className="border-b border-white/10 py-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Cpu className="h-5 w-5 text-indigo-400" />
-            <h2 className="text-xl font-bold tracking-tight">Smart Tech Stack Analysis</h2>
-          </div>
-          <p className="text-[14px] leading-relaxed text-zinc-400 mb-4">
-            Before running this application, we automatically analyzed the codebase. No configuration or technical setup is required on your part — our engine handles it natively.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {techStack.map((tech, idx) => (
-              <span key={idx} className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-[13px] font-medium text-indigo-300 shadow-inner">
-                {tech}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* What's New */}
-        <section className="border-b border-white/10 py-8">
-          <div className="mb-3 flex items-start justify-between gap-2">
-            <h2 className="text-xl font-bold tracking-tight">What&apos;s New</h2>
-            <span className="shrink-0 text-xs text-zinc-500">Version {version}</span>
-          </div>
-          <ul className="space-y-2 text-[15px] leading-relaxed text-zinc-300">
-            <li className="flex gap-2">
-              <span className="text-blue-400">✦</span>
-              <span>We rewrote every description so a normal person can understand it — no computer words, no confusing language.</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-blue-400">✦</span>
-              <span>Removed the image previews that weren&apos;t useful — now everything loads faster and looks cleaner.</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-blue-400">✦</span>
-              <span>One tap on Run is all it takes. We do the rest.</span>
-            </li>
-          </ul>
-        </section>
-
-        {/* The full story — no screenshots, no image carousel */}
-        <section className="border-b border-white/10 py-8">
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen className="h-5 w-5 text-blue-400" />
-            <h2 className="text-xl font-bold tracking-tight">The full story (in normal words)</h2>
-          </div>
-          <div className="space-y-5 text-[15px] leading-[1.85] text-zinc-300">
-            {shownText.split("\n\n").map((block, i) => (
-              <p key={i} className="first-letter:text-lg first-letter:font-semibold first-letter:text-white">{block}</p>
-            ))}
-          </div>
-          {story.techFootnote ? (
-            <div className="mt-5 rounded-xl border border-white/10 bg-zinc-900/70 px-4 py-4 text-[13px] leading-relaxed text-zinc-400">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">For the curious</span>
+          {/* ─── Stats Row ─── */}
+          <section className="mb-8 grid grid-cols-4 gap-2">
+            {[
+              { label: "Rating",    value: rating,           sub: "out of 5",           icon: <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> },
+              { label: "Fans",      value: formatLikes(likes), sub: "people starred this" },
+              { label: "Type",      value: category,         sub: "category" },
+              { label: "Size",      value: sizeLabel,        sub: "to download" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-1 rounded-2xl border border-white/8 bg-black/20 px-2 py-4 text-center"
+              >
+                <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">{stat.label}</span>
+                <div className="flex items-center gap-1">
+                  {stat.icon}
+                  <span className="text-[16px] font-bold text-white">{stat.value}</span>
+                </div>
+                <span className="text-[10px] text-zinc-500">{stat.sub}</span>
               </div>
-              {story.techFootnote}
-            </div>
-          ) : null}
-          {needsMore ? (
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="mt-4 text-[15px] font-semibold text-blue-400 hover:text-blue-300"
-            >
-              {expanded ? "Show less ▲" : "Keep reading ▼"}
-            </button>
-          ) : null}
-        </section>
+            ))}
+          </section>
 
-        {/* Who made this */}
-        <section className="border-b border-white/10 py-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-xl font-bold tracking-tight">Who made this</h2>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-5">
+          {/* ─── Plain English Summary ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="h-5 w-5 text-blue-400" />
+              <h2 className="text-lg font-bold">What is this, in plain words?</h2>
+            </div>
+            <div className="space-y-4 text-[15px] leading-[1.9] text-zinc-300">
+              {shownText.split("\n\n").map((block, i) => (
+                <p key={i}>{block}</p>
+              ))}
+            </div>
+            {story.techFootnote && (
+              <div className="mt-5 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">For the curious</span>
+                </div>
+                {story.techFootnote}
+              </div>
+            )}
+            {needsMore && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-4 text-[14px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                {expanded ? "Show less ▲" : "Keep reading ▼"}
+              </button>
+            )}
+          </section>
+
+          {/* ─── How It's Built ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
+            <h2 className="text-lg font-bold mb-1">Under the hood</h2>
+            <p className="text-[13px] text-zinc-500 mb-4">
+              Here&apos;s what this app is built with — explained without the jargon.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {techStack.map((tech, idx) => {
+                const { label, icon } = friendlyTech(tech);
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-3"
+                  >
+                    <span className="text-xl">{icon}</span>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-white">{tech}</p>
+                      <p className="text-[11px] text-zinc-500 truncate">{label}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ─── What's New ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">What&apos;s new</h2>
+              <span className="text-[11px] text-zinc-500 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
+                v{version}
+              </span>
+            </div>
+            <ul className="space-y-3">
+              {[
+                "We rewrote every description so a normal person can understand it — no computer words, no confusing language.",
+                "Removed previews that weren't useful — now everything loads faster and looks cleaner.",
+                "One tap on Run is all it takes. We do the rest in the background.",
+              ].map((item, i) => (
+                <li key={i} className="flex gap-3 text-[14px] leading-relaxed text-zinc-300">
+                  <span
+                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
+                    style={{ background: `${palette.primary}22`, color: palette.primary }}
+                  >
+                    {i + 1}
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* ─── Who Made This ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-5 w-5 text-emerald-400" />
+              <h2 className="text-lg font-bold">Who made this</h2>
+            </div>
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/10 bg-black/40">
                 {repo.avatar ? (
-                  <Image
-                    src={repo.avatar}
-                    alt={repo.owner || ""}
-                    width={56}
-                    height={56}
-                    className="h-full w-full object-cover"
-                  />
+                  <Image src={repo.avatar} alt={repo.owner || ""} width={56} height={56} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-lg font-bold text-zinc-500">
                     {(repo.owner || "?").slice(0, 1).toUpperCase()}
@@ -305,112 +452,101 @@ export default function RepoDetails({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[16px] font-semibold text-white">{repo.owner || "The open community"}</p>
-                <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">
+                <p className="text-[15px] font-semibold text-white">{repo.owner || "The open community"}</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-400">
                   This was made by {repo.owner || "volunteers"} and shared with the world for free.
                   Real people — not a big company — decided to give away their work so you can use it,
-                  learn from it, or just have fun with it. That is what free software is all about.
+                  learn from it, or just enjoy it.
                 </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-[13px] text-zinc-300 font-medium">
+                    {formatLikes(likes)} people love this project
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Supports */}
-        <section className="border-b border-white/10 py-8">
-          <h2 className="mb-4 text-xl font-bold tracking-tight">How it works on Gitmurph</h2>
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-4">
-            <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-blue-400">
+          {/* ─── How it works on Gitmurph ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 overflow-hidden">
+            <div className="flex gap-4 p-5 bg-gradient-to-br from-blue-500/10 to-cyan-500/5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-500/20 text-blue-400">
                 <Heart className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[16px] font-semibold text-white">We believe trying things should be easy</p>
-                <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">
-                  Gitmurph is built so you can try apps without downloading anything, putting in commands,
-                  or reading instruction manuals. You tap Run, we take care of the boring stuff, and the app
-                  opens in your browser. If something goes wrong, that is our problem to fix — not yours.{" "}
-                  <a
-                    href={repo.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-blue-400 hover:text-blue-300"
-                  >
-                    See the original project page →
-                  </a>
+                <p className="text-[15px] font-bold text-white">We believe trying things should be easy</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+                  Gitmurph is built so you can try apps without downloading anything or reading instruction manuals.
+                  You tap <span className="text-white font-semibold">Run</span>, we take care of the boring stuff,
+                  and the app opens in your browser.
                 </p>
               </div>
             </div>
+            <div className="border-t border-white/8 px-5 py-4">
+              <a
+                href={repo.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-[13px] text-blue-400 font-medium hover:text-blue-300 transition-colors"
+              >
+                <Globe className="h-4 w-4" />
+                See the original project page →
+              </a>
+            </div>
+          </section>
+
+          {/* ─── Quick Facts ─── */}
+          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
+            <h2 className="text-lg font-bold mb-4">Quick facts</h2>
+            <div className="divide-y divide-white/5">
+              {[
+                { label: "Made by",     value: repo.owner || "Open source community" },
+                { label: "Rough size",  value: sizeLabel },
+                { label: "Category",    value: category },
+                { label: "Works on",    value: "Any device with a web browser" },
+                { label: "Language",    value: "Mostly in English",              icon: <Globe className="h-4 w-4 text-zinc-500" /> },
+                { label: "Your privacy", value: "Check the project page",        icon: <Shield className="h-4 w-4 text-zinc-500" /> },
+              ].map((fact) => (
+                <div key={fact.label} className="flex items-center justify-between gap-4 py-3">
+                  <span className="text-[13px] text-zinc-500">{fact.label}</span>
+                  <span className="flex items-center gap-1.5 text-[13px] font-medium text-white text-right">
+                    {fact.icon}
+                    {fact.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ─── Bottom CTA ─── */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleRun}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-4 text-[15px] font-bold text-white transition-all active:scale-[0.98]"
+              style={{
+                background: `linear-gradient(135deg, ${palette.primary}, ${palette.secondary})`,
+                boxShadow: `0 6px 24px ${palette.glow}33`,
+              }}
+            >
+              {!user ? (
+                <><Sparkles className="h-4 w-4" /> Sign up to run</>
+              ) : showShopActions ? (
+                <><ExternalLink className="h-4 w-4" /> View project</>
+              ) : (
+                <><Play className="h-4 w-4 fill-white" /> Run this app</>
+              )}
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+            >
+              Back
+            </button>
           </div>
-        </section>
-
-        {/* Information */}
-        <section className="py-8">
-          <h2 className="mb-4 text-xl font-bold tracking-tight">Quick facts</h2>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
-            <InfoBlock label="Made by" value={repo.owner || "Open source community"} />
-            <InfoBlock label="Rough size" value={sizeLabel} />
-            <InfoBlock label="Type" value={category} />
-            <InfoBlock label="Works on" value="Any device with a web browser" icon={<Monitor className="h-4 w-4" />} />
-            <InfoBlock label="Language" value="Mostly in English" icon={<Globe className="h-4 w-4" />} />
-            <InfoBlock label="Your privacy" value="Check the project page for details" icon={<Shield className="h-4 w-4" />} />
-          </div>
-          <button
-            type="button"
-            className="mt-6 flex w-full items-center justify-between rounded-xl border border-white/10 bg-zinc-900/40 px-4 py-3 text-left text-zinc-300 hover:bg-zinc-900/70"
-          >
-            <span className="text-sm">See more from this maker</span>
-            <ChevronRight className="h-5 w-5 text-zinc-500" />
-          </button>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-function StatCell({
-  label,
-  sub,
-  value,
-  icon,
-}: {
-  label: string;
-  sub: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="flex w-[112px] shrink-0 snap-start flex-col items-center px-1 text-center sm:w-[120px]">
-      <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">{label}</span>
-      <div className="mt-1 flex items-center justify-center gap-1">
-        {icon}
-        <span className="text-[15px] font-semibold text-white">{value}</span>
+        </main>
       </div>
-      <span className="mt-0.5 text-[11px] text-zinc-500">{sub}</span>
-    </div>
-  );
-}
-
-function StatDivider() {
-  return <div className="w-px shrink-0 self-stretch bg-white/10" aria-hidden />;
-}
-
-function InfoBlock({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div>
-      <p className="text-[12px] font-medium text-zinc-500">{label}</p>
-      <div className="mt-1 flex items-center gap-2">
-        {icon ? <span className="text-zinc-400">{icon}</span> : null}
-        <p className="text-[15px] font-medium text-white">{value}</p>
-      </div>
-    </div>
+    </>
   );
 }

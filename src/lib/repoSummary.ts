@@ -1,3 +1,5 @@
+export type SkillLevel = "beginner" | "intermediate" | "expert";
+
 export type RepoSummary = {
   typeLabel: string;
   short: string;
@@ -24,10 +26,26 @@ function stripLangNames(text: string): string {
   return text.replace(LANG_RE, "").replace(/\s{2,}/g, " ").trim();
 }
 
-/* ── Replace jargon with normal words ── */
-function simplifyWords(text: string): string {
+/* ── Replace jargon — beginner mode strips everything ── */
+function simplifyWords(text: string, level: SkillLevel = "beginner"): string {
   let t = normalizeText(text);
-  const swaps: Array<[RegExp, string]> = [
+
+  if (level === "expert") {
+    // Experts get the raw text — just normalise whitespace
+    return t;
+  }
+
+  // Shared swaps for beginner and intermediate
+  const sharedSwaps: Array<[RegExp, string]> = [
+    [/\bopen.?source\b/gi, "free software anyone can look at and use"],
+    [/\brepository\b/gi, "project folder"],
+    [/\brepo\b/gi, "project"],
+    [/\bbug\b/gi, "mistake"],
+    [/\bbugs\b/gi, "mistakes"],
+  ];
+
+  // Beginner-only swaps (full jargon replacement)
+  const beginnerSwaps: Array<[RegExp, string]> = [
     [/\bAPI\b/gi, "a way for apps to talk to each other"],
     [/\bAPIs\b/gi, "ways for apps to talk to each other"],
     [/\bCLI\b/gi, "a tool you use by typing words instead of clicking"],
@@ -42,9 +60,6 @@ function simplifyWords(text: string): string {
     [/\bfrontend\b/gi, "the part you actually see and click on"],
     [/\bdeployment\b/gi, "putting something online so people can use it"],
     [/\bdeploy\b/gi, "put online"],
-    [/\brepository\b/gi, "project folder"],
-    [/\brepo\b/gi, "project"],
-    [/\bopen.?source\b/gi, "free software anyone can look at and use"],
     [/\bcontainer\b/gi, "a neat package that has everything the app needs"],
     [/\bcontainers\b/gi, "neat packages that have everything the app needs"],
     [/\bdocker\b/gi, "a tool that packages apps so they run the same everywhere"],
@@ -73,8 +88,6 @@ function simplifyWords(text: string): string {
     [/\bscaling\b/gi, "handling more people without breaking"],
     [/\bmodular\b/gi, "made of separate pieces you can swap in and out"],
     [/\brefactor\b/gi, "clean up and reorganize"],
-    [/\bbug\b/gi, "a mistake in the instructions that causes problems"],
-    [/\bbugs\b/gi, "mistakes in the instructions that cause problems"],
     [/\bdebug(ging)?\b/gi, "finding and fixing mistakes"],
     [/\bserver\b/gi, "a computer that runs day and night to serve you information"],
     [/\bservers\b/gi, "computers that run day and night to serve information"],
@@ -105,6 +118,37 @@ function simplifyWords(text: string): string {
     [/\bfunction\b/gi, "a reusable set of instructions"],
     [/\bclass\b/gi, "a template for creating things"],
   ];
+
+  // Intermediate-only swaps (preserve tech terms but add plain explanation in brackets)
+  const intermediateSwaps: Array<[RegExp, string]> = [
+    [/\bAPI\b/gi, "API (a bridge between apps)"],
+    [/\bCLI\b/gi, "CLI (command-line tool)"],
+    [/\bSDK\b/gi, "SDK (developer toolkit)"],
+    [/\bbackend\b/gi, "backend (server-side logic)"],
+    [/\bfrontend\b/gi, "frontend (the UI you see)"],
+    [/\bdeployment\b/gi, "deployment (going live)"],
+    [/\bdocker\b/gi, "Docker (containerisation)"],
+    [/\bkubernetes\b/gi, "Kubernetes (container orchestration)"],
+    [/\bauthentication\b/gi, "authentication (login & identity)"],
+    [/\bencryption\b/gi, "encryption (data security)"],
+    [/\bdatabase\b/gi, "database (data storage)"],
+    [/\bcloud\b/gi, "cloud (remote servers)"],
+    [/\bML\b/g, "ML (machine learning)"],
+    [/\bLLM\b/gi, "LLM (large language model)"],
+    [/\balgorithm\b/gi, "algorithm (step-by-step logic)"],
+    [/\bdependencies\b/gi, "dependencies (required packages)"],
+    [/\bCI\/CD\b/gi, "CI/CD (automated build & deploy)"],
+    [/\bwebsocket\b/gi, "WebSocket (real-time connection)"],
+    [/\bcaching\b/gi, "caching (performance optimization)"],
+    [/\bscalable\b/gi, "scalable (handles growth well)"],
+    [/\bmonorepo\b/gi, "monorepo (single unified codebase)"],
+  ];
+
+  const swaps = [
+    ...sharedSwaps,
+    ...(level === "beginner" ? beginnerSwaps : intermediateSwaps),
+  ];
+
   for (const [re, to] of swaps) t = t.replace(re, to);
   return t;
 }
@@ -124,7 +168,10 @@ function uniqNonEmpty(items: string[]): string[] {
 }
 
 /* ── Short summary (card-level) ── */
-export function summarizeRepoForBeginners(repo: RepoLike): RepoSummary {
+export function summarizeRepoForBeginners(
+  repo: RepoLike,
+  level: SkillLevel = "beginner"
+): RepoSummary {
   const raw = repo.plainEnglishDescription || "";
   const topicsText = (repo.topics || []).join(" ");
   const combined =
@@ -133,63 +180,77 @@ export function summarizeRepoForBeginners(repo: RepoLike): RepoSummary {
   const pills: string[] = [];
   const typeHints: string[] = [];
 
+  // Pills & type hints adapt to skill level
+  const isExpert = level === "expert";
+  const isIntermediate = level === "intermediate";
+
   if (/(next|react|vue|angular|svelte|tailwind|css|ui|frontend)/.test(combined)) {
-    typeHints.push("Website you can visit");
-    pills.push("Opens in your browser like any normal website");
+    typeHints.push(isExpert ? "Frontend / SSR" : isIntermediate ? "Web App (frontend)" : "Website you can visit");
+    pills.push(isExpert ? "Rendered in-browser or SSR via Node — visit directly." : isIntermediate ? "Opens in your browser like a normal website (frontend app)" : "Opens in your browser like any normal website");
   }
 
   if (/(api|server|backend|graphql|microservice|rest)/.test(combined)) {
-    typeHints.push("Behind-the-scenes helper");
-    pills.push("Works quietly in the background so other apps can do their job");
+    typeHints.push(isExpert ? "Backend / API service" : isIntermediate ? "API / backend service" : "Behind-the-scenes helper");
+    pills.push(isExpert ? "Exposes endpoints consumed by other services or clients." : isIntermediate ? "Runs on a server and serves data to other apps (backend)" : "Works quietly in the background so other apps can do their job");
   }
 
   if (/(cli|command tool|terminal|command-line|tool)/.test(combined)) {
-    typeHints.push("Text-based helper");
-    pills.push("You tell it what to do by typing — no clicking needed");
+    typeHints.push(isExpert ? "CLI tool" : isIntermediate ? "Command-line tool (CLI)" : "Text-based helper");
+    pills.push(isExpert ? "Invoked from terminal. Supports stdin/stdout pipelines." : isIntermediate ? "Run from terminal — no GUI, just commands" : "You tell it what to do by typing — no clicking needed");
   }
 
   if (/(python|django|flask|fastapi)/.test(combined)) {
-    pills.push("Popular with people who work with numbers and small handy tools");
+    pills.push(isExpert ? "Python stack — pip-installable, virtualenv recommended." : isIntermediate ? "Built with Python — great for scripting and data work" : "Popular with people who work with numbers and small handy tools");
   }
 
   if (/(rust)/.test(combined)) {
-    pills.push("Made to be really fast and really safe — like a sports car with extra seat belts");
+    pills.push(isExpert ? "Memory-safe, zero-cost abstractions. No GC." : isIntermediate ? "Built in Rust — blazing fast with memory safety guarantees" : "Made to be really fast and really safe — like a sports car with extra seat belts");
   }
 
   if (/(data|analytics|pandas|spark|ml|model|dataset)/.test(combined)) {
-    typeHints.push("Information explorer");
-    pills.push("Helps you look at numbers, charts, and patterns to understand things better");
+    typeHints.push(isExpert ? "Data / ML" : isIntermediate ? "Data & analytics" : "Information explorer");
+    pills.push(isExpert ? "Handles data pipelines, model training, or analytics queries." : isIntermediate ? "Analyzes and visualizes data — charts, models, patterns" : "Helps you look at numbers, charts, and patterns to understand things better");
   }
 
   if (/(auth|login|oauth|jwt|security|encryption)/.test(combined)) {
-    pills.push("Keeps your passwords, accounts, and private stuff safe");
+    pills.push(isExpert ? "Implements auth flows, token management, or crypto primitives." : isIntermediate ? "Handles authentication, security, or data protection" : "Keeps your passwords, accounts, and private stuff safe");
   }
 
   if (/(docker|container)/.test(combined)) {
-    pills.push("Packages everything neatly so you can start with one tap — no fuss");
+    pills.push(isExpert ? "Containerised — Dockerfile or Compose file included." : isIntermediate ? "Containerized with Docker — consistent across environments" : "Packages everything neatly so you can start with one tap — no fuss");
   }
 
   if (/(ai|llm|gpt|agent|neural|transformer|langchain|chat)/.test(combined)) {
-    typeHints.push("Smart helper");
-    pills.push("Uses a computer brain to answer questions or do tasks for you");
+    typeHints.push(isExpert ? "AI / LLM" : isIntermediate ? "AI-powered" : "Smart helper");
+    pills.push(isExpert ? "Integrates LLM inference, agent orchestration, or embedding pipelines." : isIntermediate ? "Powered by AI — uses language models or neural networks" : "Uses a computer brain to answer questions or do tasks for you");
   }
 
   if (/(game|play|fun)/.test(combined)) {
-    typeHints.push("Fun and games");
-    pills.push("Something you play or have fun with — just for the joy of it");
+    typeHints.push(isExpert ? "Game / interactive" : "Fun stuff");
+    pills.push(isExpert ? "Interactive experience or game engine demo." : isIntermediate ? "A game or interactive experience" : "Something you play or have fun with — just for the joy of it");
   }
 
   if (/(image|video|audio|media|design|editor|creative)/.test(combined)) {
-    typeHints.push("Creative tool");
-    pills.push("Helps you make, edit, or enjoy pictures, videos, or sounds");
+    typeHints.push(isExpert ? "Media / creative tooling" : isIntermediate ? "Creative & media tool" : "Creative tool");
+    pills.push(isExpert ? "Handles media processing, codec pipelines, or generative design." : isIntermediate ? "Works with images, video, audio, or creative content" : "Helps you make, edit, or enjoy pictures, videos, or sounds");
   }
 
-  if (pills.length === 0) pills.push("A free tool anyone can try — made by people who share their work with the world");
+  if (pills.length === 0) {
+    pills.push(
+      isExpert
+        ? "Open-source utility. Check the README for usage patterns."
+        : isIntermediate
+        ? "An open-source tool — free to use, modify, and explore"
+        : "A free tool anyone can try — made by people who share their work with the world"
+    );
+  }
 
-  const typeLabel = typeHints.length > 0 ? typeHints[0] : "Free community app";
+  const typeLabel = typeHints.length > 0 ? typeHints[0] : isExpert ? "OSS utility" : isIntermediate ? "Open-source app" : "Free community app";
 
-  /* Build a human-friendly short blurb */
-  const cleaned = stripLangNames(simplifyWords(raw));
+  const cleaned =
+    level === "expert"
+      ? normalizeText(raw)
+      : stripLangNames(simplifyWords(raw, level));
 
   const goodForPills = uniqNonEmpty(pills).slice(0, 5);
 
@@ -197,41 +258,46 @@ export function summarizeRepoForBeginners(repo: RepoLike): RepoSummary {
     ? cleaned.length > 160
       ? `${cleaned.slice(0, 157).trim()}...`
       : cleaned
+    : isExpert
+    ? `${typeLabel}. See README for full details.`
+    : isIntermediate
+    ? `An open-source ${typeLabel.toLowerCase()} built by community contributors.`
     : `A ${typeLabel.toLowerCase()} made by volunteers who share their work for free.`;
 
-  /* Build the deep paragraph shown on the detail/card expanded view */
-  let useSentence =
-    "Tap Run and we handle all the boring setup. When things are ready, it opens in your browser like a normal website — you just click around.";
-  if (/website/i.test(typeLabel)) {
-    useSentence =
-      "It opens right in your browser — the same way you visit any website. No downloads, no installs.";
-  } else if (/behind/i.test(typeLabel)) {
-    useSentence =
-      "This one works behind the scenes, like a waiter in a kitchen — you won't see it, but it makes everything else run smoothly.";
-  } else if (/text-based/i.test(typeLabel)) {
-    useSentence =
-      "Instead of clicking buttons, you type short words to tell it what to do. Don't worry — we handle the typing part for you when you press Run.";
-  } else if (/smart helper/i.test(typeLabel)) {
-    useSentence =
-      "Think of it like a really smart assistant — you ask it things, and it tries its best to help. Press Run and start chatting.";
-  } else if (/information/i.test(typeLabel)) {
-    useSentence =
-      "It shows you numbers and charts so you can spot what is going on — like reading a report card, but for anything you are curious about.";
-  } else if (/creative/i.test(typeLabel)) {
-    useSentence =
-      "Use it to make or change pictures, videos, sounds, or designs — the fun, creative stuff.";
-  } else if (/fun/i.test(typeLabel)) {
-    useSentence =
-      "Just press Run and enjoy — this one is all about having a good time.";
+  /* Build the deep paragraph */
+  let useSentence: string;
+
+  if (isExpert) {
+    useSentence = "Clone the repo and check the README for env vars and startup commands. Or hit Run — we auto-detect the runtime, install deps, and spawn the process.";
+    if (/website|frontend/i.test(typeLabel)) useSentence = "SSR or SPA — the dev server starts on Run. Check package.json for scripts.";
+    else if (/backend|api/i.test(typeLabel)) useSentence = "Spins up the server process. Inspect the exposed ports in the runtime tab.";
+    else if (/cli/i.test(typeLabel)) useSentence = "CLI binary — pipe args or run interactively. We handle PATH setup.";
+    else if (/ai|llm/i.test(typeLabel)) useSentence = "Inference pipeline — confirm API key requirements before running. Check .env.example.";
+  } else if (isIntermediate) {
+    useSentence = "Hit Run and we handle the setup — install dependencies, start the server, and open it in your browser. No config needed.";
+    if (/website|frontend/i.test(typeLabel)) useSentence = "It runs as a web app in the browser. We start the dev server and open the page automatically.";
+    else if (/backend|api/i.test(typeLabel)) useSentence = "We spin up the server in the background. Once it's running, you can test the endpoints or see the dashboard.";
+    else if (/cli/i.test(typeLabel)) useSentence = "It's a terminal tool — we run it for you and show the output. You can pass arguments if needed.";
+    else if (/ai|llm/i.test(typeLabel)) useSentence = "We connect to the AI model and open the interface. Some setups may need an API key — we'll let you know.";
+  } else {
+    // Beginner
+    useSentence = "Tap Run and we handle all the boring setup. When things are ready, it opens in your browser like a normal website — you just click around.";
+    if (/website/i.test(typeLabel)) useSentence = "It opens right in your browser — the same way you visit any website. No downloads, no installs.";
+    else if (/behind/i.test(typeLabel)) useSentence = "This one works behind the scenes, like a waiter in a kitchen — you won't see it, but it makes everything else run smoothly.";
+    else if (/text-based/i.test(typeLabel)) useSentence = "Instead of clicking buttons, you type short words to tell it what to do. Don't worry — we handle the typing part for you when you press Run.";
+    else if (/smart helper/i.test(typeLabel)) useSentence = "Think of it like a really smart assistant — you ask it things, and it tries its best to help. Press Run and start chatting.";
+    else if (/information/i.test(typeLabel)) useSentence = "It shows you numbers and charts so you can spot what is going on — like reading a report card, but for anything you are curious about.";
+    else if (/creative/i.test(typeLabel)) useSentence = "Use it to make or change pictures, videos, sounds, or designs — the fun, creative stuff.";
+    else if (/fun/i.test(typeLabel)) useSentence = "Just press Run and enjoy — this one is all about having a good time.";
   }
 
   const bestFor = goodForPills.slice(0, 3);
   const bestForLines =
     bestFor.length > 0
       ? bestFor.map((p) => `• ${p}`).join("\n")
-      : "• A free tool anyone can try";
+      : isExpert ? "• OSS utility — MIT / Apache licensed" : "• A free tool anyone can try";
 
-  const deep = `What is it, in plain words:\n${short}\n\nWho would like this:\n${bestForLines}\n\nHow to try it:\n${useSentence}`;
+  const deep = `What is it${isExpert ? "" : ", in plain words"}:\n${short}\n\nWho would like this:\n${bestForLines}\n\nHow to try it:\n${useSentence}`;
 
   return {
     typeLabel,
@@ -241,13 +307,39 @@ export function summarizeRepoForBeginners(repo: RepoLike): RepoSummary {
   };
 }
 
-/** Friendly category label — never a programming language name. */
-export function friendlyCategoryLabel(repo: RepoLike): string {
+/** Friendly category label — adapts to skill level. */
+export function friendlyCategoryLabel(repo: RepoLike, level: SkillLevel = "beginner"): string {
   const raw = repo.plainEnglishDescription || "";
   const topicsText = (repo.topics || []).join(" ");
-  const combined =
-    `${repo.title || ""} ${raw} ${topicsText}`.toLowerCase();
+  const combined = `${repo.title || ""} ${raw} ${topicsText}`.toLowerCase();
 
+  if (level === "expert") {
+    if (/(ai|llm|chat|gpt|assistant|agent)/.test(combined)) return "AI / LLM";
+    if (/(react|next|vue|web|website|browser)/.test(combined)) return "Frontend";
+    if (/(api|server|backend)/.test(combined)) return "Backend / API";
+    if (/(data|analytics|chart)/.test(combined)) return "Data / Analytics";
+    if (/(game|play)/.test(combined)) return "Game / Interactive";
+    if (/(cli|terminal|command)/.test(combined)) return "CLI Tool";
+    if (/(image|video|audio|media|design|creative)/.test(combined)) return "Media / Creative";
+    if (/(security|auth|encryption|privacy)/.test(combined)) return "Security / Auth";
+    if (/(docker|kubernetes|cloud|devops|infra)/.test(combined)) return "DevOps / Infra";
+    return "OSS Utility";
+  }
+
+  if (level === "intermediate") {
+    if (/(ai|llm|chat|gpt|assistant|agent)/.test(combined)) return "AI-powered";
+    if (/(react|next|vue|web|website|browser)/.test(combined)) return "Web app";
+    if (/(api|server|backend)/.test(combined)) return "API / backend";
+    if (/(data|analytics|chart)/.test(combined)) return "Data & analytics";
+    if (/(game|play)/.test(combined)) return "Game / interactive";
+    if (/(cli|terminal|command)/.test(combined)) return "CLI tool";
+    if (/(image|video|audio|media|design|creative)/.test(combined)) return "Creative tool";
+    if (/(security|auth|encryption|privacy)/.test(combined)) return "Security & auth";
+    if (/(docker|kubernetes|cloud|devops|infra)/.test(combined)) return "DevOps / Cloud";
+    return "Open-source app";
+  }
+
+  // Beginner
   if (/(ai|llm|chat|gpt|assistant|agent)/.test(combined)) return "Smart helper";
   if (/(react|next|vue|web|website|browser)/.test(combined)) return "Website";
   if (/(api|server|backend)/.test(combined)) return "Behind-the-scenes worker";
@@ -266,55 +358,75 @@ export type LongBeginnerStory = {
   techFootnote: string | null;
 };
 
-/* ── The big, warm, story-like explanation for complete beginners ── */
-export function buildLongBeginnerStory(repo: RepoLike): LongBeginnerStory {
+/* ── Adaptive full story — language tuned to skill level ── */
+export function buildLongBeginnerStory(
+  repo: RepoLike,
+  level: SkillLevel = "beginner"
+): LongBeginnerStory {
   const title = repo.title || "This project";
   const raw = normalizeText(repo.plainEnglishDescription || "");
-  const soft = stripLangNames(simplifyWords(raw));
-  const cat = friendlyCategoryLabel(repo);
+  const soft =
+    level === "expert"
+      ? raw
+      : stripLangNames(simplifyWords(raw, level));
+  const cat = friendlyCategoryLabel(repo, level);
   const lang =
     repo.language && repo.language !== "Unknown" ? repo.language : "";
   const topics = repo.topics || [];
 
-  /* Para 1 — warm welcome */
-  const p1 = `Welcome to ${title}. This is a piece of free software — which means anyone on earth can look at it, use it, and even help make it better. You don't need to know anything about computers or programming to understand what it does, and you definitely don't need anyone's permission to try it.`;
+  let paragraphs: string[];
 
-  /* Para 2 — the explanation */
-  const p2 = soft
-    ? `Here is what it does, explained like you are telling a friend over coffee: ${soft}. That is really all there is to it — no scary words, no hidden meaning.`
-    : `The people who made this haven't written a long explanation yet, but think of it like a tool or an app that someone created and then said: "Here, anyone can have this for free." It is shared on the internet so that anybody who finds it useful can grab it and try it out.`;
-
-  /* Para 3 — the category */
-  const p3 = `We put this under the "${cat}" section on Gitmurph. That is just our way of sorting things so you can find what you need — like how a supermarket has aisles for drinks, snacks, and cleaning supplies. It doesn't mean you need to study anything or take a test.`;
-
-  /* Para 4 — how to run it */
-  const p4 = `When you see the big blue RUN button, go ahead and tap it. What happens next is like ordering food from a menu — you pick what you want, and the kitchen (that's us) handles the cooking. We download the app, set it up, and open it in your web browser when it is ready. You don't need to install anything on your computer. You don't need to type weird commands. You literally just wait a few moments and then start clicking around like you would on any normal website.`;
-
-  /* Para 5 — what if it fails */
-  const p5 = `Sometimes an app will not start, and that is perfectly normal. Some free software needs special keys, secret passwords, or paid services that we can't guess or provide. If that happens, it is NOT your fault — it is just how that particular app was set up by its makers. You can try a different app, or come back later.`;
-
-  /* Para 6 — encouragement */
-  const p6 = `The best part? Every single app on Gitmurph is made by real people — hobbyists, students, professionals — who decided to share their work for free. When you press Run, you are not just trying an app. You are supporting a movement where people help people, no money required.`;
-
-  /* Para 7 — topic details if available */
-  let p7 = "";
-  if (topics.length > 0) {
-    const friendlyTopics = topics
-      .slice(0, 5)
-      .map((t) => stripLangNames(t.replace(/-/g, " ")))
-      .filter((t) => t.length > 0);
-    if (friendlyTopics.length > 0) {
-      p7 = `Some labels the makers gave this project: ${friendlyTopics.join(", ")}. Don't worry if those words sound unfamiliar — they are just tags, like hashtags on a social media post. They help other people find this app when searching.`;
+  if (level === "expert") {
+    const p1 = `**${title}** — ${cat}. Open-source, freely licensed.`;
+    const p2 = soft
+      ? soft
+      : "No description provided. Check the README and source for implementation details.";
+    const p3 = `Tagged as: ${cat} on Gitmurph. Use the runtime tab to spin up a sandboxed instance — runtime detection is automatic (Node, Python, Go, Rust, etc.). If the repo requires env vars, check .env.example before hitting Run.`;
+    const p4 = `Clone via: \`git clone ${repo.title ? `https://github.com/${repo.title}` : "the URL above"}\`. Or just hit Run — we detect the package manager, install deps (\`npm install\` / \`pip install\` / \`cargo build\`), and spawn the process.`;
+    const p5 = topics.length > 0
+      ? `Topics: ${topics.slice(0, 8).join(", ")}.${lang ? ` Primary language: ${lang}.` : ""}`
+      : lang ? `Primary language: ${lang}.` : "";
+    paragraphs = [p1, p2, p3, p4, p5].filter((p) => p.length > 0);
+  } else if (level === "intermediate") {
+    const p1 = `**${title}** is an open-source project — free to use, modify, and build on. You don't need to know how to code to run it, but if you do, you can also fork it and hack on it.`;
+    const p2 = soft
+      ? `Here's what it does: ${soft}.`
+      : `The author hasn't written a detailed description yet, but think of it as a developer-shared tool in the "${cat}" category.`;
+    const p3 = `We've filed this under **${cat}** on Gitmurph. ${lang ? `The codebase is primarily written in **${lang}**.` : ""} ${topics.length > 0 ? `Key topics: ${topics.slice(0, 5).join(", ")}.` : ""}`;
+    const p4 = `Hit **Run** and we'll handle the environment setup — install dependencies, start the process, and open it in your browser. Some projects may need API keys or env variables; we'll surface those if they're needed.`;
+    const p5 = `If it fails to start, it usually means the project needs external services (a database, a paid API, etc.) that we can't provision automatically. The README typically has setup instructions for those cases.`;
+    paragraphs = [p1, p2, p3, p4, p5].filter((p) => p.length > 0);
+  } else {
+    // Beginner — original warm style
+    const p1 = `Welcome to ${title}. This is a piece of free software — which means anyone on earth can look at it, use it, and even help make it better. You don't need to know anything about computers or programming to understand what it does, and you definitely don't need anyone's permission to try it.`;
+    const p2 = soft
+      ? `Here is what it does, explained like you are telling a friend over coffee: ${soft}. That is really all there is to it — no scary words, no hidden meaning.`
+      : `The people who made this haven't written a long explanation yet, but think of it like a tool or an app that someone created and then said: "Here, anyone can have this for free." It is shared on the internet so that anybody who finds it useful can grab it and try it out.`;
+    const p3 = `We put this under the "${cat}" section on Gitmurph. That is just our way of sorting things so you can find what you need — like how a supermarket has aisles for drinks, snacks, and cleaning supplies. It doesn't mean you need to study anything or take a test.`;
+    const p4 = `When you see the big Run button, go ahead and tap it. What happens next is like ordering food from a menu — you pick what you want, and the kitchen (that's us) handles the cooking. We download the app, set it up, and open it in your web browser when it is ready. You don't need to install anything on your computer.`;
+    const p5 = `Sometimes an app will not start, and that is perfectly normal. Some free software needs special keys or paid services that we can't guess or provide. If that happens, it is NOT your fault — it is just how that particular app was set up by its makers. You can try a different app, or come back later.`;
+    const p6 = `The best part? Every single app on Gitmurph is made by real people — hobbyists, students, professionals — who decided to share their work for free. When you press Run, you are supporting a movement where people help people, no money required.`;
+    let p7 = "";
+    if (topics.length > 0) {
+      const friendlyTopics = topics
+        .slice(0, 5)
+        .map((t) => stripLangNames(t.replace(/-/g, " ")))
+        .filter((t) => t.length > 0);
+      if (friendlyTopics.length > 0) {
+        p7 = `Some labels the makers gave this project: ${friendlyTopics.join(", ")}. Don't worry if those words sound unfamiliar — they are just tags, like hashtags on a social media post.`;
+      }
     }
+    paragraphs = [p1, p2, p3, p4, p5, p6, p7].filter((p) => p.length > 0);
   }
 
-  const paragraphs = [p1, p2, p3, p4, p5, p6, p7].filter(
-    (p) => p.length > 0
-  );
-
-  const techFootnote = lang
-    ? `(Behind the curtain: some of the code inside this project is written in a computer language called ${lang}. You will never need to know that to use the app. It is only mentioned here for the curious folks who like to peek behind the curtain.)`
-    : null;
+  const techFootnote =
+    level === "expert"
+      ? null // Experts don't need the "for the curious" note
+      : level === "intermediate" && lang
+      ? `Primary language: **${lang}**. ${topics.length > 0 ? `Stack hints: ${topics.slice(0, 6).join(", ")}.` : ""}`
+      : lang
+      ? `(Behind the curtain: some of the code inside this project is written in a computer language called ${lang}. You will never need to know that to use the app. It is only mentioned here for the curious folks who like to peek behind the curtain.)`
+      : null;
 
   return { paragraphs, techFootnote };
 }

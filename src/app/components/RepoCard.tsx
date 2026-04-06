@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { Package, Play, Sparkles, Star } from "lucide-react";
 import { friendlyCategoryLabel, summarizeRepoForBeginners } from "@/lib/repoSummary";
+import { useAuth } from "../context/AuthContext";
+import { useSkillLevel } from "../hooks/useSkillLevel";
 
 export interface Repo {
   id: number;
@@ -42,7 +44,7 @@ function getRepoKey(repo: Repo) {
   return `${repo.language || ""} ${(repo.topics || []).join(" ")} ${repo.title}`.toLowerCase();
 }
 
-function getRepoPalette(repo: Repo) {
+export function getRepoPalette(repo: Repo) {
   const source = getRepoKey(repo);
   if (source.includes("react") || source.includes("next")) return paletteMap.react;
   if (source.includes("typescript")) return paletteMap.typescript;
@@ -105,12 +107,27 @@ export function getRepoBackdrop(repo: Repo) {
 }
 
 export default function RepoCard({ repo, showPrice = false, onRun, variant = "list" }: RepoCardProps) {
+  const { user, openAuthModal } = useAuth();
+  const skillLevel = useSkillLevel();
   const computedPrice = repo.stars > 100000 ? "$29.99" : repo.stars > 50000 ? "$19.99" : repo.stars > 10000 ? "$9.99" : "$0";
   const priceLabel = computedPrice === "$0" ? "Free" : `Get ${computedPrice}`;
   const backdrop = getRepoBackdrop(repo);
   const palette = getRepoPalette(repo);
-  const eyebrow = friendlyCategoryLabel(repo);
-  const summary = summarizeRepoForBeginners(repo);
+  const eyebrow = friendlyCategoryLabel(repo, skillLevel);
+  const summary = summarizeRepoForBeginners(repo, skillLevel);
+
+  function handleRun(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!user) {
+      openAuthModal("run_gate", repo);
+      return;
+    }
+    if (onRun) {
+      onRun(repo);
+      return;
+    }
+    window.open(repo.url, "_blank");
+  }
 
   if (variant === "widget") {
     return (
@@ -197,14 +214,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
 
               <div className="flex shrink-0 items-center gap-2">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onRun) {
-                      onRun(repo);
-                      return;
-                    }
-                    window.open(repo.url, "_blank");
-                  }}
+                  onClick={handleRun}
                   className="flex h-11 min-w-[92px] items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/12 px-4 text-sm font-semibold tracking-wide text-white backdrop-blur-md transition-all hover:bg-white/20"
                   aria-label={`Run ${repo.title}`}
                 >
@@ -278,14 +288,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
 
       <div className="flex shrink-0 flex-col justify-center items-end gap-2 pl-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onRun) {
-              onRun(repo);
-              return;
-            }
-            window.open(repo.url, "_blank");
-          }}
+          onClick={handleRun}
           className="flex h-[34px] min-w-[80px] items-center justify-center gap-1.5 rounded-[8px] border border-blue-500/30 bg-blue-500/10 px-4 text-[13px] font-bold tracking-wide text-blue-400 transition-all hover:bg-blue-500/20 hover:border-blue-500/50 shadow-inner group-hover:bg-blue-500/30"
           aria-label={`Run ${repo.title}`}
         >

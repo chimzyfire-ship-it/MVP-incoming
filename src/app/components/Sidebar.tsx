@@ -1,6 +1,7 @@
 "use client";
 
 import { Star, LayoutGrid, Flame, Eye, Bookmark, Settings, Search, User, Store, Rocket, Rss, Zap } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export type Tab = "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "runnable" | "viewed" | "bookmarks" | "settings";
 
@@ -20,6 +21,13 @@ export default function Sidebar({
   onSearchChange,
   onSearchSubmit,
 }: SidebarProps) {
+  const { user, openAuthModal } = useAuth();
+
+  const skillBadge =
+    user?.skillLevel === "expert" ? { label: "Expert", color: "text-violet-300 border-violet-400/40 bg-violet-500/10" }
+    : user?.skillLevel === "intermediate" ? { label: "Intermediate", color: "text-blue-300 border-blue-400/40 bg-blue-500/10" }
+    : null; // beginners get no badge — keeps it simple
+
   const getIconClass = (id: string) => 
     `h-4 w-4 shrink-0 transition-colors duration-200 ${
       activeTab === id ? "text-blue-400" : "text-blue-400/60"
@@ -134,14 +142,35 @@ export default function Sidebar({
 
       {/* ── Profile Bottom Region ── */}
       <div className="mt-auto p-4 border-t border-white/5">
-        <button className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5">
-          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-black/40 border border-white/10">
-            <User className="h-4 w-4 text-zinc-400" />
+        {user ? (
+          <div className="flex w-full items-center gap-3 rounded-lg p-2">
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 border border-white/10 shrink-0">
+              <span className="text-xs font-bold text-white">
+                {user.name.slice(0, 1).toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-zinc-200 tracking-tight">{user.name}</p>
+              {skillBadge && (
+                <span className={`mt-0.5 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold ${skillBadge.color}`}>
+                  {skillBadge.label}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-sm font-semibold text-zinc-300 tracking-tight">
-            Chimzy Fire
-          </span>
-        </button>
+        ) : (
+          <button
+            onClick={() => openAuthModal("manual")}
+            className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5"
+          >
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-black/40 border border-white/10">
+              <User className="h-4 w-4 text-zinc-400" />
+            </div>
+            <span className="text-sm font-semibold text-zinc-300 tracking-tight">
+              Sign up free
+            </span>
+          </button>
+        )}
       </div>
     </aside>
   );

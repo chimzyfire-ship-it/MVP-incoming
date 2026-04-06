@@ -1004,3 +1004,48 @@ export async function getRunJobTarget(jobId: string) {
     appUrl: job.appUrl,
   };
 }
+
+export async function deleteRunJob(id: string) {
+  const job = state.jobs.get(id);
+  if (!job) return;
+
+  // 1. Kill associated process if running locally
+  const proc = state.processes.get(id);
+  if (proc) {
+    if (!proc.killed) {
+      try {
+        proc.kill("SIGKILL");
+      } catch (err) {
+        console.error(`[run/store] Failed to kill process for job ${id}:`, err);
+      }
+    }
+    state.processes.delete(id);
+  }
+
+  // 2. Cleanup workspace files
+  if (job.workspacePath) {
+    try {
+      await fs.rm(job.workspacePath, { recursive: true, force: true });
+    } catch (err) {
+      console.warn(`[run/store] Failed to remove workspace for job ${id}`, err);
+    }
+  }
+
+  // 3. Clear cloud state if connected
+  if (redis && job.repo?.id) {
+    try {
+      await redis.del(`repo:${job.repo.id}:status`);
+      await redis.del(`repo:${job.repo.id}:url`);
+      await redis.del(`repo:${job.repo.id}:logs`);
+    } catch (err) {
+      console.warn(`[run/store] Failed to delete cloud status for job ${id}`, err);
+    }
+  }
+
+  // 4. Remove from queue and map
+  state.queue = state.queue.filter((qId) => qId !== id);
+  state.jobs.delete(id);
+
+  // 5. Save changes
+  await saveJobs();
+}
