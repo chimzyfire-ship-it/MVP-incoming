@@ -9,28 +9,28 @@ import { useAuth, type GitmurphUser, type SkillLevel } from "../context/AuthCont
 export interface InterestCategory {
   id: string;
   label: string;
-  emoji: string;
+  color: string;
   /** Maps to discover section ids */
   sectionIds: string[];
 }
 
 export const INTEREST_CATEGORIES: InterestCategory[] = [
-  { id: "ai",          label: "Smart AI helpers",       emoji: "🤖", sectionIds: ["ai"] },
-  { id: "creative",    label: "Creative & Design",       emoji: "🎨", sectionIds: ["creative"] },
-  { id: "chat",        label: "Chat & Communication",    emoji: "💬", sectionIds: ["productivity", "frontend"] },
-  { id: "games",       label: "Games & Fun",             emoji: "🎮", sectionIds: ["creative", "frontend"] },
-  { id: "security",    label: "Safety & Privacy",        emoji: "🛡️", sectionIds: ["security"] },
-  { id: "data",        label: "Numbers & Charts",        emoji: "📊", sectionIds: ["data"] },
-  { id: "web",         label: "Websites & Web Apps",     emoji: "💻", sectionIds: ["frontend"] },
-  { id: "music",       label: "Music & Sound",           emoji: "🎵", sectionIds: ["creative"] },
-  { id: "mobile",      label: "Mobile Tools",            emoji: "📱", sectionIds: ["frontend", "productivity"] },
-  { id: "home",        label: "Home & Lifestyle",        emoji: "🏠", sectionIds: ["productivity"] },
-  { id: "finance",     label: "Finance & Money",         emoji: "💰", sectionIds: ["data", "backend"] },
-  { id: "learning",    label: "Learning & Education",    emoji: "📚", sectionIds: ["productivity", "ai"] },
-  { id: "devtools",    label: "Nerdy Dev Tools",         emoji: "🔧", sectionIds: ["devtools", "infra"] },
-  { id: "news",        label: "News & Information",      emoji: "🌍", sectionIds: ["productivity", "data"] },
-  { id: "health",      label: "Health & Fitness",        emoji: "🏋️", sectionIds: ["productivity"] },
-  { id: "backend",     label: "Behind the Scenes",       emoji: "⚙️", sectionIds: ["backend", "infra"] },
+  { id: "ai",          label: "AI & Smart Tools",        color: "#818cf8", sectionIds: ["ai"] },
+  { id: "creative",    label: "Creative & Design",       color: "#f472b6", sectionIds: ["creative"] },
+  { id: "chat",        label: "Chat & Communication",    color: "#34d399", sectionIds: ["productivity", "frontend"] },
+  { id: "games",       label: "Games & Interactive",     color: "#fb923c", sectionIds: ["creative", "frontend"] },
+  { id: "security",    label: "Security & Privacy",      color: "#f87171", sectionIds: ["security"] },
+  { id: "data",        label: "Data & Analytics",        color: "#38bdf8", sectionIds: ["data"] },
+  { id: "web",         label: "Web Apps & Sites",        color: "#a78bfa", sectionIds: ["frontend"] },
+  { id: "music",       label: "Music & Audio",           color: "#e879f9", sectionIds: ["creative"] },
+  { id: "mobile",      label: "Mobile Tools",            color: "#22d3ee", sectionIds: ["frontend", "productivity"] },
+  { id: "home",        label: "Home & Lifestyle",        color: "#4ade80", sectionIds: ["productivity"] },
+  { id: "finance",     label: "Finance & Money",         color: "#facc15", sectionIds: ["data", "backend"] },
+  { id: "learning",    label: "Learning & Education",    color: "#60a5fa", sectionIds: ["productivity", "ai"] },
+  { id: "devtools",    label: "Developer Tools",         color: "#94a3b8", sectionIds: ["devtools", "infra"] },
+  { id: "news",        label: "News & Information",      color: "#fdba74", sectionIds: ["productivity", "data"] },
+  { id: "health",      label: "Health & Fitness",        color: "#86efac", sectionIds: ["productivity"] },
+  { id: "backend",     label: "Infrastructure & APIs",   color: "#cbd5e1", sectionIds: ["backend", "infra"] },
 ];
 
 // ─── Skill Level Config ───────────────────────────────────────────────────────
@@ -392,7 +392,10 @@ export default function AuthModal() {
                           : "border-white/8 bg-black/10 text-zinc-400 hover:border-white/15 hover:text-zinc-200"
                       }`}
                     >
-                      <span className="text-lg">{cat.emoji}</span>
+                      <div
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: cat.color, boxShadow: `0 0 6px ${cat.color}99` }}
+                      />
                       <span className="text-[13px] font-medium leading-snug">{cat.label}</span>
                       {isSelected && (
                         <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-blue-400" strokeWidth={2.5} />

@@ -380,43 +380,44 @@ export function buildLongBeginnerStory(
     const p1 = `**${title}** — ${cat}. Open-source, freely licensed.`;
     const p2 = soft
       ? soft
-      : "No description provided. Check the README and source for implementation details.";
-    const p3 = `Tagged as: ${cat} on Gitmurph. Use the runtime tab to spin up a sandboxed instance — runtime detection is automatic (Node, Python, Go, Rust, etc.). If the repo requires env vars, check .env.example before hitting Run.`;
-    const p4 = `Clone via: \`git clone ${repo.title ? `https://github.com/${repo.title}` : "the URL above"}\`. Or just hit Run — we detect the package manager, install deps (\`npm install\` / \`pip install\` / \`cargo build\`), and spawn the process.`;
-    const p5 = topics.length > 0
+      : "No description provided. Refer to the README and source code for implementation details.";
+    const p3 = topics.length > 0
       ? `Topics: ${topics.slice(0, 8).join(", ")}.${lang ? ` Primary language: ${lang}.` : ""}`
       : lang ? `Primary language: ${lang}.` : "";
-    paragraphs = [p1, p2, p3, p4, p5].filter((p) => p.length > 0);
+    const p4 = `Runtime detection is automatic (Node, Python, Go, Rust, etc.). If the project requires environment variables, check .env.example before hitting Run. Clone via: \`git clone ${repo.title ? `https://github.com/${repo.title}` : "the URL above"}\`.`;
+    paragraphs = [p1, p2, p3, p4].filter((p) => p.length > 0);
+
   } else if (level === "intermediate") {
-    const p1 = `**${title}** is an open-source project — free to use, modify, and build on. You don't need to know how to code to run it, but if you do, you can also fork it and hack on it.`;
+    const p1 = `**${title}** is an open-source project. It is free to use, modify, and build on top of — no license fees, no hidden costs.`;
     const p2 = soft
-      ? `Here's what it does: ${soft}.`
-      : `The author hasn't written a detailed description yet, but think of it as a developer-shared tool in the "${cat}" category.`;
-    const p3 = `We've filed this under **${cat}** on Gitmurph. ${lang ? `The codebase is primarily written in **${lang}**.` : ""} ${topics.length > 0 ? `Key topics: ${topics.slice(0, 5).join(", ")}.` : ""}`;
-    const p4 = `Hit **Run** and we'll handle the environment setup — install dependencies, start the process, and open it in your browser. Some projects may need API keys or env variables; we'll surface those if they're needed.`;
-    const p5 = `If it fails to start, it usually means the project needs external services (a database, a paid API, etc.) that we can't provision automatically. The README typically has setup instructions for those cases.`;
+      ? `What it does: ${soft}.`
+      : `No detailed description is available yet. This falls under the "${cat}" category.`;
+    const p3 = lang
+      ? `The codebase is primarily written in **${lang}**. ${topics.length > 0 ? `Key topics: ${topics.slice(0, 5).join(", ")}.` : ""}`
+      : topics.length > 0 ? `Key topics: ${topics.slice(0, 5).join(", ")}.` : "";
+    const p4 = `Hit **Run** and we will handle the environment — install dependencies, start the process, and open it in your browser. No configuration needed on your end.`;
+    const p5 = `If the app fails to start, it typically means the project requires external services such as a database or a paid API that cannot be provisioned automatically. The README will usually document the manual setup steps for those cases.`;
     paragraphs = [p1, p2, p3, p4, p5].filter((p) => p.length > 0);
+
   } else {
-    // Beginner — original warm style
-    const p1 = `Welcome to ${title}. This is a piece of free software — which means anyone on earth can look at it, use it, and even help make it better. You don't need to know anything about computers or programming to understand what it does, and you definitely don't need anyone's permission to try it.`;
-    const p2 = soft
-      ? `Here is what it does, explained like you are telling a friend over coffee: ${soft}. That is really all there is to it — no scary words, no hidden meaning.`
-      : `The people who made this haven't written a long explanation yet, but think of it like a tool or an app that someone created and then said: "Here, anyone can have this for free." It is shared on the internet so that anybody who finds it useful can grab it and try it out.`;
-    const p3 = `We put this under the "${cat}" section on Gitmurph. That is just our way of sorting things so you can find what you need — like how a supermarket has aisles for drinks, snacks, and cleaning supplies. It doesn't mean you need to study anything or take a test.`;
-    const p4 = `When you see the big Run button, go ahead and tap it. What happens next is like ordering food from a menu — you pick what you want, and the kitchen (that's us) handles the cooking. We download the app, set it up, and open it in your web browser when it is ready. You don't need to install anything on your computer.`;
-    const p5 = `Sometimes an app will not start, and that is perfectly normal. Some free software needs special keys or paid services that we can't guess or provide. If that happens, it is NOT your fault — it is just how that particular app was set up by its makers. You can try a different app, or come back later.`;
-    const p6 = `The best part? Every single app on Gitmurph is made by real people — hobbyists, students, professionals — who decided to share their work for free. When you press Run, you are supporting a movement where people help people, no money required.`;
-    let p7 = "";
+    // Beginner — warm, professional, focused on the app itself
+    const p1 = soft
+      ? `**${title}** is a free, publicly available piece of software. Here is what it does: ${soft}.`
+      : `**${title}** is a free, publicly available piece of software. The creator has not written a detailed description yet, but it falls under the category of ${cat}.`;
+    const p2 = `Anyone can use it — no purchase required, no sign-up with the creator needed. It was built by real people and shared openly so that others could benefit from it.`;
+    const p3 = `To try it, press the **Run** button. We handle everything in the background — getting it ready, starting it up, and opening it for you. You do not need to install anything on your computer.`;
+    const p4 = `Occasionally an app will not start. This usually means it requires a paid service or a special configuration that we cannot set up automatically. If that happens, it is not a problem on your end. You can simply try a different app.`;
+    let p5 = "";
     if (topics.length > 0) {
       const friendlyTopics = topics
         .slice(0, 5)
         .map((t) => stripLangNames(t.replace(/-/g, " ")))
         .filter((t) => t.length > 0);
       if (friendlyTopics.length > 0) {
-        p7 = `Some labels the makers gave this project: ${friendlyTopics.join(", ")}. Don't worry if those words sound unfamiliar — they are just tags, like hashtags on a social media post.`;
+        p5 = `This project is tagged under: ${friendlyTopics.join(", ")}.`;
       }
     }
-    paragraphs = [p1, p2, p3, p4, p5, p6, p7].filter((p) => p.length > 0);
+    paragraphs = [p1, p2, p3, p4, p5].filter((p) => p.length > 0);
   }
 
   const techFootnote =

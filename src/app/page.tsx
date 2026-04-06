@@ -757,7 +757,7 @@ export default function Home() {
                       <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-blue-400" />
                         <h2 className="text-xl font-bold tracking-tight text-white">
-                          For you, {user.name.split(" ")[0]} 👋
+                          For you, {user.name.split(" ")[0]}
                         </h2>
                       </div>
                       <p className="text-sm text-zinc-400">

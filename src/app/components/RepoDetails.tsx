@@ -38,28 +38,28 @@ function formatLikes(n: number) {
 }
 
 // Friendly plain-English names for tech stack items
-const TECH_PLAIN: Record<string, { label: string; icon: string }> = {
-  "typescript":  { label: "Typed scripting language",    icon: "🔷" },
-  "javascript":  { label: "Web scripting language",      icon: "🟡" },
-  "python":      { label: "Beginner-friendly language",  icon: "🐍" },
-  "rust":        { label: "Super fast system language",  icon: "🦀" },
-  "go":          { label: "Speed-focused language",      icon: "🐹" },
-  "java":        { label: "Cross-platform language",     icon: "☕" },
-  "next.js":     { label: "Website builder",             icon: "▲" },
-  "react":       { label: "Interactive UI builder",      icon: "⚛️" },
-  "vue":         { label: "Friendly UI framework",       icon: "💚" },
-  "angular":     { label: "Full-featured UI toolkit",   icon: "🔴" },
-  "svelte":      { label: "Fast UI framework",           icon: "🔥" },
-  "tailwind css":{ label: "Visual styling tool",         icon: "💨" },
-  "node.js":     { label: "Server-side JavaScript",      icon: "🟢" },
-  "express":     { label: "Simple web server",           icon: "🚂" },
-  "django":      { label: "Python web framework",        icon: "🎸" },
-  "laravel":     { label: "PHP web framework",           icon: "🎭" },
+const TECH_PLAIN: Record<string, { label: string; color: string }> = {
+  "typescript":  { label: "Typed scripting language",   color: "#38bdf8" },
+  "javascript":  { label: "Web scripting language",     color: "#facc15" },
+  "python":      { label: "General-purpose language",   color: "#60a5fa" },
+  "rust":        { label: "Systems programming language", color: "#fb923c" },
+  "go":          { label: "Compiled, concurrent language", color: "#22d3ee" },
+  "java":        { label: "Cross-platform language",    color: "#f97316" },
+  "next.js":     { label: "React-based web framework",  color: "#a3a3a3" },
+  "react":       { label: "UI component library",       color: "#67e8f9" },
+  "vue":         { label: "Progressive UI framework",   color: "#4ade80" },
+  "angular":     { label: "Full-scale UI framework",    color: "#f87171" },
+  "svelte":      { label: "Compiled UI framework",      color: "#fb923c" },
+  "tailwind css":{ label: "Utility-first CSS framework", color: "#38bdf8" },
+  "node.js":     { label: "Server-side JavaScript runtime", color: "#4ade80" },
+  "express":     { label: "Minimal web server framework", color: "#a3a3a3" },
+  "django":      { label: "Python web framework",       color: "#34d399" },
+  "laravel":     { label: "PHP web framework",          color: "#f87171" },
 };
 
 function friendlyTech(tech: string) {
   const key = tech.toLowerCase();
-  return TECH_PLAIN[key] ?? { label: tech, icon: "🔩" };
+  return TECH_PLAIN[key] ?? { label: "Programming language or tool", color: "#a3a3a3" };
 }
 
 export default function RepoDetails({
@@ -356,7 +356,7 @@ export default function RepoDetails({
           <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
             <div className="flex items-center gap-2 mb-4">
               <BookOpen className="h-5 w-5 text-blue-400" />
-              <h2 className="text-lg font-bold">What is this, in plain words?</h2>
+              <h2 className="text-lg font-bold">What is this?</h2>
             </div>
             <div className="space-y-4 text-[15px] leading-[1.9] text-zinc-300">
               {shownText.split("\n\n").map((block, i) => (
@@ -378,7 +378,7 @@ export default function RepoDetails({
                 onClick={() => setExpanded((v) => !v)}
                 className="mt-4 text-[14px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
               >
-                {expanded ? "Show less ▲" : "Keep reading ▼"}
+                {expanded ? "Show less" : "Read more"}
               </button>
             )}
           </section>
@@ -391,13 +391,16 @@ export default function RepoDetails({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {techStack.map((tech, idx) => {
-                const { label, icon } = friendlyTech(tech);
+                const { label, color } = friendlyTech(tech);
                 return (
                   <div
                     key={idx}
                     className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-3"
                   >
-                    <span className="text-xl">{icon}</span>
+                    <div
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}88` }}
+                    />
                     <div className="min-w-0">
                       <p className="text-[13px] font-semibold text-white">{tech}</p>
                       <p className="text-[11px] text-zinc-500 truncate">{label}</p>
@@ -468,18 +471,18 @@ export default function RepoDetails({
             </div>
           </section>
 
-          {/* ─── How it works on Gitmurph ─── */}
+          {/* ─── Open Source Note ─── */}
           <section className="mb-8 rounded-2xl border border-white/8 overflow-hidden">
             <div className="flex gap-4 p-5 bg-gradient-to-br from-blue-500/10 to-cyan-500/5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-500/20 text-blue-400">
                 <Heart className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[15px] font-bold text-white">We believe trying things should be easy</p>
+                <p className="text-[15px] font-bold text-white">{repo.title} is open source</p>
                 <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
-                  Gitmurph is built so you can try apps without downloading anything or reading instruction manuals.
-                  You tap <span className="text-white font-semibold">Run</span>, we take care of the boring stuff,
-                  and the app opens in your browser.
+                  This project is free and publicly available. Anyone can view the source code, report issues,
+                  or contribute improvements. Hit <span className="text-white font-semibold">Run</span> to
+                  launch it instantly — no installation required.
                 </p>
               </div>
             </div>
@@ -491,7 +494,7 @@ export default function RepoDetails({
                 className="flex items-center gap-2 text-[13px] text-blue-400 font-medium hover:text-blue-300 transition-colors"
               >
                 <Globe className="h-4 w-4" />
-                See the original project page →
+                View the original project page
               </a>
             </div>
           </section>

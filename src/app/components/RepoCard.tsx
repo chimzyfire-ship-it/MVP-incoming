@@ -170,7 +170,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
                   </p>
                   {summary.goodForPills[0] ? (
                     <p className="mt-2 line-clamp-1 text-[11px] text-zinc-400">
-                      ✦ {summary.goodForPills[0]}
+                      — {summary.goodForPills[0]}
                     </p>
                   ) : null}
                 </div>
@@ -287,7 +287,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
         <div className="flex flex-wrap items-center gap-2 mt-1.5">
           {summary.goodForPills.slice(0, 2).map((pill, i) => (
             <span key={i} className="text-[10px] rounded-full border border-white/8 bg-white/[0.04] px-2 py-0.5 text-zinc-500">
-              ✦ {pill}
+              — {pill}
             </span>
           ))}
         </div>
