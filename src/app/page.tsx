@@ -440,18 +440,18 @@ export default function Home() {
         <main className="flex flex-1 flex-col items-center justify-center px-4 text-center relative z-10 -mt-10">
           <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 font-medium tracking-wide mb-8 animate-pulse">
             <Sparkles className="h-4 w-4 mr-2" />
-            Discover open-source magic
+            The App Store for Open Source
           </div>
           
           <h1 className="max-w-4xl text-5xl font-extrabold tracking-tight text-white md:text-7xl lg:text-8xl leading-[1.1]">
-            Run apps without <br className="hidden sm:block" />
+            GitHub, translated <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-              the headache.
+              for everyone.
             </span>
           </h1>
           
           <p className="mt-8 max-w-2xl text-lg text-zinc-300 md:text-xl">
-            Explore thousands of hand-picked tools, games, and smart helpers. No servers to set up, no complex coding required. Discover what you love and launch it instantly.
+            The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
