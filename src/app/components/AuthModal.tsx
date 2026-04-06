@@ -110,14 +110,6 @@ export default function AuthModal() {
   if (!mounted && !authModalOpen) return null;
 
   function handleStep1Next() {
-    if (authMode === "signup" && !name.trim()) {
-      setNameError("Please enter your name");
-      return;
-    }
-    if (!email.trim() || !password.trim()) {
-      setNameError("Please enter your email and password");
-      return;
-    }
     setNameError("");
     setStep(2);
   }
@@ -136,8 +128,8 @@ export default function AuthModal() {
   function handleFinish() {
     if (interests.length === 0) return;
     const newUser: GitmurphUser = {
-      name: name.trim(),
-      email: email.trim(),
+      name: name.trim() || "User",
+      email: email.trim() || "user@example.com",
       skillLevel: skillLevel!,
       interests,
       joinedAt: Date.now(),
@@ -294,6 +286,7 @@ export default function AuthModal() {
               </div>
 
               <button
+                onClick={handleStep1Next}
                 className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 py-3 text-[14px] font-medium text-white transition hover:bg-white/10 active:scale-[0.98]"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
