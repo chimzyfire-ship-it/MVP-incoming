@@ -151,9 +151,16 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
           <div className="relative flex h-full min-h-[248px] flex-col justify-between p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-2">
-                <span className="w-fit rounded-full border border-white/15 bg-black/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-md">
-                  {eyebrow}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="w-fit rounded-full border border-white/15 bg-black/25 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-md">
+                    {eyebrow}
+                  </span>
+                  {repo.easyToRun && (
+                    <span className="shrink-0 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 tracking-wide">
+                      ✓ Easy to run
+                    </span>
+                  )}
+                </div>
                 <div className="max-w-[20rem]">
                   <h3 className="text-[29px] font-semibold leading-[1.05] tracking-tight text-white text-balance sm:text-[33px]">
                     {repo.title}

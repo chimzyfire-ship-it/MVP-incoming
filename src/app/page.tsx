@@ -169,7 +169,7 @@ function buildDiscoverSections(repos: Repo[], level: import("@/lib/repoSummary")
 }
 
 export default function Home() {
-  const { user, openAuthModal, pendingRunRepo } = useAuth();
+  const { user, isLoaded, openAuthModal, pendingRunRepo } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("discover");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Repo[]>([]);
@@ -411,6 +411,68 @@ export default function Home() {
     return results.slice(0, 12);
   }, [user, discoverSections]);
 
+  // ── FOR UNAUTHENTICATED USERS: Display World-Class Landing Page First ──
+  if (isLoaded && !user) {
+    return (
+      <div className="flex h-[100dvh] w-full flex-col bg-[#042a33] text-white overflow-hidden relative">
+        {/* Decorative Grid & Glows */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
+        <div className="absolute top-[-10%] left-[-10%] h-[50%] w-[50%] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] h-[50%] w-[50%] rounded-full bg-cyan-400/20 blur-[120px] pointer-events-none" />
+        
+        {/* Navbar */}
+        <header className="flex w-full items-center justify-between px-6 py-6 md:px-12 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+              <span className="text-[18px] font-black tracking-tight text-white">G</span>
+            </div>
+            <span className="text-xl font-bold tracking-tight">GITMURPH</span>
+          </div>
+          <button
+            onClick={() => openAuthModal("signup_prompt")}
+            className="rounded-full bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20 backdrop-blur-md border border-white/5"
+          >
+            Sign In
+          </button>
+        </header>
+
+        {/* Hero Section */}
+        <main className="flex flex-1 flex-col items-center justify-center px-4 text-center relative z-10 -mt-10">
+          <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 font-medium tracking-wide mb-8 animate-pulse">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Discover open-source magic
+          </div>
+          
+          <h1 className="max-w-4xl text-5xl font-extrabold tracking-tight text-white md:text-7xl lg:text-8xl leading-[1.1]">
+            Run apps without <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              the headache.
+            </span>
+          </h1>
+          
+          <p className="mt-8 max-w-2xl text-lg text-zinc-300 md:text-xl">
+            Explore thousands of hand-picked tools, games, and smart helpers. No servers to set up, no complex coding required. Discover what you love and launch it instantly.
+          </p>
+          
+          <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
+            <button
+              onClick={() => openAuthModal("signup_prompt")}
+              className="group relative inline-flex h-14 items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-500 px-10 text-lg font-bold text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300 hover:scale-105 hover:bg-blue-400 hover:shadow-[0_0_60px_rgba(59,130,246,0.7)] w-full sm:w-auto"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Sign In / Sign Up
+              </span>
+              <div className="absolute inset-0 z-0 h-full w-full bg-gradient-to-r from-blue-600 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            </button>
+            <p className="text-sm text-zinc-500 sm:ml-2">100% Free. Takes 30 seconds.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ── FOR AUTHENTICATED USERS: Display the normal App Interface ──
   return (
     <>
       <Sidebar 
@@ -446,44 +508,6 @@ export default function Home() {
               </h1>
             </header>
 
-            {/* ── Massive Guest Sign-Up Hero ── */}
-            {!user && activeTab === "discover" && !isInSearchMode && (
-              <div className="relative overflow-hidden rounded-3xl border border-blue-400/20 bg-gradient-to-br from-[#0a192f]/80 to-[#042a33]/90 px-6 py-12 sm:px-12 sm:py-16 shadow-2xl isolate">
-                {/* Background glowing orbs */}
-                <div className="absolute -top-24 -left-20 h-64 w-64 rounded-full bg-blue-500/20 blur-[80px] pointer-events-none" />
-                <div className="absolute -bottom-24 -right-20 h-64 w-64 rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
-                
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-[0_0_40px_rgba(59,130,246,0.4)]">
-                    <span className="text-4xl font-black text-white">G</span>
-                  </div>
-                  
-                  <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-                    Discover open-source apps. <br className="hidden sm:block" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-                      Run them instantly.
-                    </span>
-                  </h2>
-                  
-                  <p className="mb-8 max-w-2xl text-base text-zinc-300 sm:text-lg">
-                    Join Gitmurph to explore hand-picked tools, games, and smart helpers. No setup, no coding experience required. Just tap Run and enjoy.
-                  </p>
-                  
-                  <button
-                    onClick={() => openAuthModal("signup_prompt")}
-                    className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300 hover:scale-105 hover:bg-blue-400 hover:shadow-[0_0_60px_rgba(59,130,246,0.7)]"
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      <UserPlus className="h-5 w-5" />
-                      Sign up for free
-                    </span>
-                    <div className="absolute inset-0 z-0 h-full w-full bg-gradient-to-r from-blue-600 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  </button>
-                  
-                  <p className="mt-4 text-xs text-zinc-500">Takes less than 30 seconds. No credit card required.</p>
-                </div>
-              </div>
-            )}
 
             {/* ── Original onboarding banner (guests only) ── */}
             {showOnboarding && !user && activeTab !== "runtime" && false && (
