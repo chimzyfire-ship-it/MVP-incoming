@@ -53,6 +53,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalTrigger, setAuthModalTrigger] = useState<AuthModalTrigger | null>(null);
   const [pendingRunRepo, setPendingRunRepo] = useState<unknown | null>(null);
 
+  // ── ?reset URL param: wipes all session data for a clean slate ──────────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("reset")) {
+      try {
+        localStorage.clear();
+      } catch { /* ignore */ }
+      // Remove the ?reset param and reload cleanly
+      params.delete("reset");
+      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
+      window.location.replace(newUrl);
+    }
+  }, []);
+
   // Hydrate from localStorage on mount
   useEffect(() => {
     try {
@@ -64,6 +79,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       /* ignore */
     }
     setIsLoaded(true);
+  }, []);
+
+  // ── Cmd+Shift+L = instant sign-out & reload (Mac shortcut) ───────────────
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "l") {
+        e.preventDefault();
+        try { localStorage.clear(); } catch { /* ignore */ }
+        window.location.replace(window.location.pathname);
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
   const openAuthModal = useCallback((trigger: AuthModalTrigger, pendingRepo?: unknown) => {
