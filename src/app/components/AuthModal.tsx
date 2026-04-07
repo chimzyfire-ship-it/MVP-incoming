@@ -158,6 +158,7 @@ export default function AuthModal() {
   }
 
   const isGated = authModalTrigger === "run_gate";
+  const isCompulsory = !user || !user.skillLevel || !user.interests || user.interests.length === 0;
 
   return (
     <div
@@ -169,7 +170,7 @@ export default function AuthModal() {
       <div
         className="absolute inset-0 bg-black/75 backdrop-blur-md"
         // Prevent click-away dismissing for compulsory onboarding
-        onClick={isGated || (user && (!user.skillLevel || !user.interests || user.interests.length === 0)) ? undefined : closeAuthModal}
+        onClick={isGated || isCompulsory ? undefined : closeAuthModal}
       />
 
       {/* Modal card */}
@@ -179,7 +180,7 @@ export default function AuthModal() {
         }`}
       >
         {/* Close (only if not gated and not compulsory onboarding) */}
-        {!isGated && !(user && (!user.skillLevel || !user.interests || user.interests.length === 0)) && (
+        {!isGated && !isCompulsory && (
           <button
             onClick={closeAuthModal}
             className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-white/10 hover:text-white"

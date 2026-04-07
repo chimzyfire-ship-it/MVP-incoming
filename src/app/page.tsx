@@ -194,10 +194,12 @@ export default function Home() {
     }
   }, [user]);
 
-  // Compulsory onboarding check for existing accounts with missing info
+  // Completely compulsory onboarding check for everyone (unauthenticated or missing info)
   useEffect(() => {
-    if (isLoaded && user) {
-      if (!user.skillLevel || !user.interests || user.interests.length === 0) {
+    if (isLoaded) {
+      if (!user) {
+        openAuthModal("signup_prompt");
+      } else if (!user.skillLevel || !user.interests || user.interests.length === 0) {
         openAuthModal("signup_prompt");
       }
     }
