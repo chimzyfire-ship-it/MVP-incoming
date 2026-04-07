@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, FormEvent, useMemo, useCallback } from "react";
-import { Search, Loader2, Bookmark, Eye, Rocket, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer, Trash2, Sparkles, UserPlus } from "lucide-react";
+import { Search, Loader2, Bookmark, Eye, Server, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer, Trash2, Compass, Activity, UserPlus } from "lucide-react";
 
 import Sidebar, { Tab } from "./components/Sidebar";
 import MobileNav from "./components/MobileNav";
@@ -193,6 +193,15 @@ export default function Home() {
       setShowOnboarding(false);
     }
   }, [user]);
+
+  // Compulsory onboarding check for existing accounts with missing info
+  useEffect(() => {
+    if (isLoaded && user) {
+      if (!user.skillLevel || !user.interests || user.interests.length === 0) {
+        openAuthModal("signup_prompt");
+      }
+    }
+  }, [isLoaded, user, openAuthModal]);
 
   function dismissOnboarding() {
     setShowOnboarding(false);
@@ -439,7 +448,7 @@ export default function Home() {
         {/* Hero Section */}
         <main className="flex flex-1 flex-col items-center justify-center px-4 text-center relative z-10 -mt-10">
           <div className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 font-medium tracking-wide mb-8 animate-pulse">
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Compass className="h-4 w-4 mr-2" />
             The App Store for Open Source
           </div>
           
@@ -514,7 +523,7 @@ export default function Home() {
               <div className="rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 sm:px-5 sm:py-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 h-9 w-9 rounded-xl bg-black/25 border border-white/10 flex items-center justify-center">
-                    <Rocket className="h-4 w-4 text-blue-300" />
+                    <Server className="h-4 w-4 text-blue-300" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-white">
@@ -573,7 +582,7 @@ export default function Home() {
               <section className="flex flex-col gap-6">
                 <div className="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-cyan-500/5 p-5">
                   <div className="flex items-start gap-3">
-                    <Rocket className="mt-0.5 h-5 w-5 text-blue-300" />
+                    <Server className="mt-0.5 h-5 w-5 text-blue-300" />
                     <div>
                       <h2 className="text-xl font-bold text-white">Press Run, we set it up for you</h2>
                       <p className="mt-1 text-sm text-zinc-300">
@@ -714,7 +723,7 @@ export default function Home() {
             {activeTab === "runnable" && !isLoading && (
               <div className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 p-5">
                 <div className="flex items-start gap-3">
-                  <Rocket className="mt-0.5 h-5 w-5 text-emerald-300" />
+                  <Activity className="mt-0.5 h-5 w-5 text-emerald-300" />
                   <div>
                     <h2 className="text-xl font-bold text-white">Apps that actually run</h2>
                     <p className="mt-1 text-sm text-zinc-300">
@@ -755,7 +764,7 @@ export default function Home() {
                   <div className="flex items-end justify-between gap-4 pl-1">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-blue-400" />
+                        <Compass className="h-4 w-4 text-blue-400" />
                         <h2 className="text-xl font-bold tracking-tight text-white">
                           For you, {user.name.split(" ")[0]}
                         </h2>

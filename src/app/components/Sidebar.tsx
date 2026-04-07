@@ -1,7 +1,8 @@
 "use client";
 
-import { Star, LayoutGrid, Flame, Eye, Bookmark, Settings, Search, User, Store, Rocket, Rss, Zap } from "lucide-react";
+import { Star, LayoutGrid, Activity, Eye, Bookmark, Settings, Search, User, Store, Server, Rss, Cpu } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useSkillLevel } from "../hooks/useSkillLevel";
 
 export type Tab = "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "runnable" | "viewed" | "bookmarks" | "settings";
 
@@ -33,54 +34,91 @@ export default function Sidebar({
       activeTab === id ? "text-blue-400" : "text-blue-400/60"
     }`;
 
+  const skillLevel = useSkillLevel();
+
+  const getLabel = (id: Tab, defaultLabel: string) => {
+    if (skillLevel === "expert") {
+      switch(id) {
+        case "categories": return "Categories";
+        case "feed": return "Activity Feed";
+        case "runtime": return "Runtimes";
+        case "trending": return "Trending Stars";
+        case "runnable": return "Zero Config";
+        case "viewed": return "History";
+        case "bookmarks": return "Bookmarks";
+        case "settings": return "Preferences";
+        default: return defaultLabel;
+      }
+    } else if (skillLevel === "intermediate") {
+      switch(id) {
+        case "categories": return "App Types";
+        case "feed": return "Activity";
+        case "runtime": return "Environments";
+        case "trending": return "Popular";
+        case "runnable": return "Easy Setup";
+        case "viewed": return "History";
+        case "bookmarks": return "Saved";
+        case "settings": return "Settings";
+        default: return defaultLabel;
+      }
+    } else {
+      // Beginner
+      switch(id) {
+        case "shop": return "Free Shop";
+        case "settings": return "Options";
+        default: return defaultLabel;
+      }
+    }
+  };
+
   const navItems = [
     {
-      label: "Explore",
+      label: getLabel("discover", "Explore"),
       id: "discover" as Tab,
       icon: <Star className={getIconClass("discover")} />,
     },
     {
-      label: "Types",
+      label: getLabel("categories", "Types"),
       id: "categories" as Tab,
       icon: <LayoutGrid className={getIconClass("categories")} />,
     },
     {
-      label: "Marketplace",
+      label: getLabel("shop", "Marketplace"),
       id: "shop" as Tab,
       icon: <Store className={getIconClass("shop")} />,
     },
     {
-      label: "Feed",
+      label: getLabel("feed", "Feed"),
       id: "feed" as Tab,
       icon: <Rss className={getIconClass("feed")} />,
     },
     {
-      label: "Try Apps",
+      label: getLabel("runtime", "Try Apps"),
       id: "runtime" as Tab,
-      icon: <Rocket className={getIconClass("runtime")} />,
+      icon: <Server className={getIconClass("runtime")} />,
     },
     {
-      label: "Popular now",
+      label: getLabel("trending", "Popular now"),
       id: "trending" as Tab,
-      icon: <Flame className={getIconClass("trending")} />,
+      icon: <Activity className={getIconClass("trending")} />,
     },
     {
-      label: "Easy to Run",
+      label: getLabel("runnable", "Easy to Run"),
       id: "runnable" as Tab,
-      icon: <Zap className={getIconClass("runnable")} />,
+      icon: <Cpu className={getIconClass("runnable")} />,
     },
     {
-      label: "Recently Viewed",
+      label: getLabel("viewed", "Recently Viewed"),
       id: "viewed" as Tab,
       icon: <Eye className={getIconClass("viewed")} />,
     },
     {
-      label: "Saved",
+      label: getLabel("bookmarks", "Saved"),
       id: "bookmarks" as Tab,
       icon: <Bookmark className={getIconClass("bookmarks")} />,
     },
     {
-      label: "Options",
+      label: getLabel("settings", "Settings"),
       id: "settings" as Tab,
       icon: <Settings className={getIconClass("settings")} />,
     },

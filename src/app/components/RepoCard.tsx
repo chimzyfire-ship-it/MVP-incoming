@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Package, Play, Sparkles, Star } from "lucide-react";
+import { Package, Play, Activity, Star } from "lucide-react";
 import { friendlyCategoryLabel, summarizeRepoForBeginners } from "@/lib/repoSummary";
 import { useAuth } from "../context/AuthContext";
 import { useSkillLevel } from "../hooks/useSkillLevel";
@@ -64,45 +64,68 @@ function escapeSvg(value: string) {
     .replace(/>/g, "&gt;");
 }
 
-/* Backdrop SVG for widget cards — no external images, just a beautiful gradient */
+/* Backdrop SVG for widget cards — dynamic, premium, noisy mesh gradients */
 export function getRepoBackdrop(repo: Repo) {
   const palette = getRepoPalette(repo);
-  const label = friendlyCategoryLabel(repo);
-  const topic = repo.topics?.find(Boolean)?.replace(/-/g, " ") || repo.owner || "Try it free";
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  const label = friendlyCategoryLabel(repo, "beginner");
+  const topic = repo.topics?.find(Boolean)?.replace(/-/g, " ") || repo.owner || repo.language || "Open Source";
+  
+  let seedVal = repo.id || 0;
+  if (!seedVal && repo.title) {
+    seedVal = repo.title.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  }
+  const seed = seedVal % 5;
+  const layout = seedVal % 3;
+
+  const patterns = [
+    `<circle cx="1200" cy="-100" r="700" fill="${palette.glow}" opacity="0.4" filter="blur(160px)" />
+     <circle cx="200" cy="800" r="600" fill="${palette.accent}" opacity="0.3" filter="blur(140px)" />
+     <path d="M-200 450 Q 800 -200 1800 450" fill="none" stroke="white" opacity="0.05" stroke-width="2" stroke-dasharray="10 20" />`,
+    `<polygon points="0,0 1600,900 1600,0" fill="${palette.secondary}" opacity="0.2" />
+     <rect x="-400" y="300" width="2400" height="200" fill="${palette.glow}" opacity="0.2" transform="rotate(-15 800 450)" filter="blur(40px)" />
+     <rect x="-400" y="450" width="2400" height="100" fill="${palette.primary}" opacity="0.4" transform="rotate(-15 800 450)" filter="blur(80px)" />`,
+    `<circle cx="1400" cy="900" r="800" fill="${palette.glow}" opacity="0.2" filter="blur(100px)" />
+     <path d="M0 0 L1600 900 M0 900 L1600 0" stroke="${palette.accent}" stroke-width="40" opacity="0.05" />
+     <circle cx="800" cy="450" r="300" fill="none" stroke="${palette.primary}" stroke-width="80" opacity="0.1" />`,
+    `<path d="M-100 600 C 400 300, 1200 800, 1700 200 L1700 900 L-100 900 Z" fill="${palette.secondary}" opacity="0.3" filter="blur(90px)" />
+     <path d="M-100 800 C 600 500, 1000 900, 1700 400 L1700 900 L-100 900 Z" fill="${palette.glow}" opacity="0.4" filter="blur(120px)" />`,
+    `<circle cx="1500" cy="100" r="400" fill="none" stroke="${palette.primary}" stroke-width="2" opacity="0.4" stroke-dasharray="4 12" />
+     <circle cx="1500" cy="100" r="600" fill="none" stroke="${palette.primary}" stroke-width="1" opacity="0.2" />
+     <circle cx="100" cy="800" r="450" fill="${palette.glow}" opacity="0.3" filter="blur(140px)" />`
+  ];
+
+  const typographyVars = [
+    `<text x="80" y="140" font-family="Inter, system-ui, sans-serif" font-size="38" font-weight="700" fill="rgba(255,255,255,0.7)" letter-spacing="8">${escapeSvg(label.toUpperCase())}</text>
+     <text x="80" y="800" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="500" fill="rgba(255,255,255,0.5)">${escapeSvg(topic)}</text>`,
+    `<text x="-40" y="420" font-family="Inter, system-ui, sans-serif" font-size="280" font-weight="900" fill="rgba(255,255,255,0.03)" letter-spacing="-4">${escapeSvg(label.toUpperCase())}</text>
+     <text x="1520" y="820" text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="600" fill="rgba(255,255,255,0.6)" letter-spacing="4">${escapeSvg(topic.toUpperCase())}</text>`,
+    `<text transform="rotate(-90 80 820)" x="80" y="820" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="800" fill="rgba(255,255,255,0.6)" letter-spacing="6">${escapeSvg(topic.toUpperCase())}</text>
+     <text x="180" y="120" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="600" fill="${palette.accent}" opacity="0.8" letter-spacing="2">${escapeSvg(label)}</text>`
+  ];
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
       <defs>
         <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="${palette.primary}" />
-          <stop offset="55%" stop-color="${palette.secondary}" />
-          <stop offset="100%" stop-color="#041c24" />
+          <stop offset="0%" stop-color="#020f13" />
+          <stop offset="60%" stop-color="#051921" />
+          <stop offset="100%" stop-color="#082531" />
         </linearGradient>
-        <radialGradient id="glowA" cx="25%" cy="25%" r="55%">
-          <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.95" />
-          <stop offset="100%" stop-color="${palette.accent}" stop-opacity="0" />
+        <radialGradient id="meshCenter" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="${palette.secondary}" stop-opacity="0.3" />
+          <stop offset="100%" stop-color="${palette.secondary}" stop-opacity="0" />
         </radialGradient>
-        <radialGradient id="glowB" cx="80%" cy="20%" r="45%">
-          <stop offset="0%" stop-color="${palette.glow}" stop-opacity="0.65" />
-          <stop offset="100%" stop-color="${palette.glow}" stop-opacity="0" />
-        </radialGradient>
+        <filter id="noise" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.12 0" />
+        </filter>
       </defs>
+
       <rect width="1600" height="900" fill="url(#bg)" />
-      <rect width="1600" height="900" fill="url(#glowA)" />
-      <rect width="1600" height="900" fill="url(#glowB)" />
-      <g opacity="0.18" fill="none" stroke="white">
-        <circle cx="1250" cy="170" r="220" stroke-width="2" />
-        <circle cx="1350" cy="250" r="120" stroke-width="1.5" />
-        <circle cx="260" cy="720" r="260" stroke-width="2" />
-        <path d="M0 640 C 210 520, 360 860, 620 720 S 1120 520, 1600 740" stroke-width="24" stroke-linecap="round" />
-      </g>
-      <g opacity="0.14">
-        <rect x="1020" y="140" width="340" height="340" rx="52" fill="white" />
-        <rect x="1140" y="520" width="220" height="220" rx="110" fill="white" />
-      </g>
-      <text x="88" y="132" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700" fill="rgba(255,255,255,0.86)" letter-spacing="6">${escapeSvg(label.toUpperCase())}</text>
-      <text x="88" y="770" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="600" fill="rgba(255,255,255,0.80)">${escapeSvg(topic)}</text>
-    </svg>
-  `;
+      <rect width="1600" height="900" fill="url(#meshCenter)" />
+      ${patterns[seed]}
+      ${typographyVars[layout]}
+      <rect width="1600" height="900" style="mix-blend-mode: overlay;" fill="url(#noise)" opacity="0.6" />
+    </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
@@ -205,7 +228,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
                       className="h-full w-full rounded-full object-cover"
                     />
                   ) : (
-                    <Sparkles className="h-6 w-6 text-white/80" />
+                    <Activity className="h-6 w-6 text-white/80" />
                   )}
                 </div>
                 <div className="min-w-0">

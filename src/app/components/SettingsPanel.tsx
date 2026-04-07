@@ -11,7 +11,9 @@ import {
   Globe,
   Shield,
   Eye,
+  User,
 } from "lucide-react";
+import { useAuth, type SkillLevel } from "../context/AuthContext";
 
 type Theme = "dark" | "light" | "system";
 type FontSize = "small" | "medium" | "large";
@@ -92,6 +94,7 @@ function Toggle({
 
 export default function SettingsPanel() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const { user, updateUser, openAuthModal, signOut } = useAuth();
 
   function update(partial: Partial<Settings>) {
     const next = { ...settings, ...partial };
@@ -109,6 +112,51 @@ export default function SettingsPanel() {
           Configure your GITMURPH experience.
         </p>
       </header>
+
+      {/* ── Account & Experience ── */}
+      {user && (
+        <section aria-labelledby="experience-heading" className="flex flex-col gap-4">
+          <h3 id="experience-heading" className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wider text-zinc-500">
+            <User className="h-4 w-4" /> Account & Experience
+          </h3>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
+              <div>
+                <p className="text-sm font-medium text-white">{user.name}</p>
+                <p className="mt-0.5 text-[13px] text-zinc-400">{user.email}</p>
+              </div>
+              <div className="flex flex-col gap-2 items-end">
+                <button onClick={() => openAuthModal("manual")} className="text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors">Edit Interests</button>
+                <button onClick={() => signOut()} className="text-[11px] text-zinc-500 hover:text-zinc-400 transition-colors">Sign Out</button>
+              </div>
+            </div>
+            
+            <fieldset>
+              <legend className="mb-3 text-sm font-semibold text-zinc-300">Experience Level</legend>
+              <div className="flex flex-col gap-2">
+                {[
+                  { id: "beginner", label: "Beginner", desc: "Simple descriptions, plain English" },
+                  { id: "intermediate", label: "Intermediate", desc: "Balanced technical terminology" },
+                  { id: "expert", label: "Expert", desc: "Raw developer jargon & architecture" }
+                ].map(level => (
+                  <button
+                    key={level.id}
+                    onClick={() => updateUser({ skillLevel: level.id as SkillLevel })}
+                    className={`flex flex-col items-start border rounded-xl px-4 py-3 text-left transition-all ${
+                      user.skillLevel === level.id 
+                        ? "bg-blue-500/15 border-blue-500/40 shadow-sm" 
+                        : "border-white/5 bg-black/20 hover:border-white/10 hover:bg-white/5"
+                    }`}
+                  >
+                    <span className={`text-sm font-semibold ${user.skillLevel === level.id ? 'text-white' : 'text-zinc-300'}`}>{level.label}</span>
+                    <span className={`text-xs mt-0.5 ${user.skillLevel === level.id ? 'text-blue-200' : 'text-zinc-500'}`}>{level.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+        </section>
+      )}
 
       {/* ── Appearance ── */}
       <section aria-labelledby="appearance-heading" className="flex flex-col gap-4">

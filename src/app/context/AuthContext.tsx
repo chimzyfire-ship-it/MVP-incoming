@@ -27,6 +27,7 @@ interface AuthContextValue {
   closeAuthModal: () => void;
   // Actions
   signUp: (user: GitmurphUser) => void;
+  updateUser: (partial: Partial<GitmurphUser>) => void;
   signOut: () => void;
 }
 
@@ -43,6 +44,7 @@ const AuthContext = createContext<AuthContextValue>({
   openAuthModal: () => {},
   closeAuthModal: () => {},
   signUp: () => {},
+  updateUser: () => {},
   signOut: () => {},
 });
 
@@ -53,10 +55,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalTrigger, setAuthModalTrigger] = useState<AuthModalTrigger | null>(null);
   const [pendingRunRepo, setPendingRunRepo] = useState<unknown | null>(null);
 
-  // ── ?reset URL param: wipes all session data for a clean slate ──────────
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+    
+    // Support ?onboarding=1 to demonstrate compulsory onboarding
+    if (params.has("onboarding")) {
+      params.delete("onboarding");
+      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
+      window.history.replaceState({}, "", newUrl);
+      setTimeout(() => {
+        openAuthModal("manual");
+      }, 500);
+    }
+    
     if (params.has("reset")) {
       try {
         localStorage.clear();
@@ -117,6 +129,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthModalTrigger(null);
   }, []);
 
+  const updateUser = useCallback((partial: Partial<GitmurphUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...partial };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        /* ignore */
+      }
+      return updated;
+    });
+  }, []);
+
   const signOut = useCallback(() => {
     setUser(null);
     setPendingRunRepo(null);
@@ -138,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         openAuthModal,
         closeAuthModal,
         signUp,
+        updateUser,
         signOut,
       }}
     >

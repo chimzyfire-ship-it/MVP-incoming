@@ -10,7 +10,9 @@ import {
   Shield,
   BookOpen,
   Users,
-  Sparkles,
+  User,
+  Activity,
+  Info,
   Play,
   X,
   ExternalLink,
@@ -182,7 +184,7 @@ export default function RepoDetails({
           <div className="flex min-h-[56px] items-center justify-between border-b border-white/10 bg-black px-4 py-2">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20">
-                <Sparkles className="h-4 w-4 text-emerald-400" />
+                <Activity className="h-4 w-4 text-emerald-400" />
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-white">Running natively</h3>
@@ -295,7 +297,7 @@ export default function RepoDetails({
                 >
                   {!user ? (
                     <>
-                      <Sparkles className="h-4 w-4" />
+                      <User className="h-4 w-4" />
                       Sign up to run
                     </>
                   ) : showShopActions ? (
@@ -366,7 +368,7 @@ export default function RepoDetails({
             {story.techFootnote && (
               <div className="mt-5 rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-[13px] leading-relaxed text-zinc-400">
                 <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
+                  <Info className="h-3.5 w-3.5 text-zinc-500" />
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">For the curious</span>
                 </div>
                 {story.techFootnote}
@@ -411,32 +413,7 @@ export default function RepoDetails({
             </div>
           </section>
 
-          {/* ─── What's New ─── */}
-          <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">What&apos;s new</h2>
-              <span className="text-[11px] text-zinc-500 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
-                v{version}
-              </span>
-            </div>
-            <ul className="space-y-3">
-              {[
-                "We rewrote every description so a normal person can understand it — no computer words, no confusing language.",
-                "Removed previews that weren't useful — now everything loads faster and looks cleaner.",
-                "One tap on Run is all it takes. We do the rest in the background.",
-              ].map((item, i) => (
-                <li key={i} className="flex gap-3 text-[14px] leading-relaxed text-zinc-300">
-                  <span
-                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                    style={{ background: `${palette.primary}22`, color: palette.primary }}
-                  >
-                    {i + 1}
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </section>
+
 
           {/* ─── Who Made This ─── */}
           <section className="mb-8 rounded-2xl border border-white/8 bg-black/20 p-5">
@@ -534,7 +511,7 @@ export default function RepoDetails({
               }}
             >
               {!user ? (
-                <><Sparkles className="h-4 w-4" /> Sign up to run</>
+                <><User className="h-4 w-4" /> Sign up to run</>
               ) : showShopActions ? (
                 <><ExternalLink className="h-4 w-4" /> View project</>
               ) : (

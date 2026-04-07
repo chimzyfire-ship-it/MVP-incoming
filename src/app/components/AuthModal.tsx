@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, ArrowRight, Check, Sparkles, Zap, Code2, User, Mail } from "lucide-react";
+import { X, ArrowRight, Check, Compass, Settings2, Code2, User, Mail } from "lucide-react";
 import { useAuth, type GitmurphUser, type SkillLevel } from "../context/AuthContext";
 
 // ─── Interest Categories ──────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ const SKILL_LEVELS: {
 }[] = [
   {
     id: "beginner",
-    icon: <Sparkles className="h-7 w-7" />,
+    icon: <Compass className="h-7 w-7" />,
     label: "Just getting started",
     tagline: "Regular phone & computer user",
     desc: "I use apps every day but I've never built one. I just want to discover cool stuff and see what's out there.",
@@ -57,7 +57,7 @@ const SKILL_LEVELS: {
   },
   {
     id: "intermediate",
-    icon: <Zap className="h-7 w-7" />,
+    icon: <Settings2 className="h-7 w-7" />,
     label: "I know my way around",
     tagline: "Tech-comfortable, some tinkering",
     desc: "I understand how apps work, maybe set up something once or twice, or I've done a little bit of coding before.",
@@ -80,7 +80,7 @@ const SKILL_LEVELS: {
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export default function AuthModal() {
-  const { authModalOpen, closeAuthModal, signUp, authModalTrigger } = useAuth();
+  const { authModalOpen, closeAuthModal, signUp, updateUser, authModalTrigger, user } = useAuth();
 
   const [step, setStep] = useState(1);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
@@ -95,11 +95,25 @@ export default function AuthModal() {
   // Reset when modal opens
   useEffect(() => {
     if (authModalOpen) {
-      setStep(1);
-      setName("");
-      setEmail("");
-      setSkillLevel(null);
-      setInterests([]);
+      if (user) {
+        setName(user.name);
+        setEmail(user.email);
+        setSkillLevel(user.skillLevel || null);
+        setInterests(user.interests || []);
+        if (!user.skillLevel) {
+          setStep(2);
+        } else if (!user.interests || user.interests.length === 0) {
+          setStep(3);
+        } else {
+          setStep(2); // Showing modal again for complete user -> edit preferences
+        }
+      } else {
+        setStep(1);
+        setName("");
+        setEmail("");
+        setSkillLevel(null);
+        setInterests([]);
+      }
       setNameError("");
       setMounted(true);
     } else {
@@ -127,14 +141,20 @@ export default function AuthModal() {
 
   function handleFinish() {
     if (interests.length === 0) return;
-    const newUser: GitmurphUser = {
-      name: name.trim() || "User",
-      email: email.trim() || "user@example.com",
-      skillLevel: skillLevel!,
-      interests,
-      joinedAt: Date.now(),
-    };
-    signUp(newUser);
+    
+    if (user) {
+      updateUser({ skillLevel: skillLevel!, interests });
+      closeAuthModal();
+    } else {
+      const newUser: GitmurphUser = {
+        name: name.trim() || "User",
+        email: email.trim() || "user@example.com",
+        skillLevel: skillLevel!,
+        interests,
+        joinedAt: Date.now(),
+      };
+      signUp(newUser);
+    }
   }
 
   const isGated = authModalTrigger === "run_gate";
@@ -148,7 +168,8 @@ export default function AuthModal() {
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/75 backdrop-blur-md"
-        onClick={isGated ? undefined : closeAuthModal}
+        // Prevent click-away dismissing for compulsory onboarding
+        onClick={isGated || (user && (!user.skillLevel || !user.interests || user.interests.length === 0)) ? undefined : closeAuthModal}
       />
 
       {/* Modal card */}
@@ -157,8 +178,8 @@ export default function AuthModal() {
           authModalOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
         }`}
       >
-        {/* Close (only if not gated) */}
-        {!isGated && (
+        {/* Close (only if not gated and not compulsory onboarding) */}
+        {!isGated && !(user && (!user.skillLevel || !user.interests || user.interests.length === 0)) && (
           <button
             onClick={closeAuthModal}
             className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
@@ -410,7 +431,7 @@ export default function AuthModal() {
                 disabled={interests.length === 0}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_24px_rgba(59,130,246,0.4)] transition hover:from-blue-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Sparkles className="h-4 w-4" />
+                <Compass className="h-4 w-4" />
                 Show my picks
               </button>
 
