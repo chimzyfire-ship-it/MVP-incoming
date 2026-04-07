@@ -194,12 +194,10 @@ export default function Home() {
     }
   }, [user]);
 
-  // Completely compulsory onboarding check for everyone (unauthenticated or missing info)
+  // Compulsory onboarding check for existing accounts with missing info
   useEffect(() => {
     if (isLoaded) {
-      if (!user) {
-        openAuthModal("signup_prompt");
-      } else if (!user.skillLevel || !user.interests || user.interests.length === 0) {
+      if (user && (!user.skillLevel || !user.interests || user.interests.length === 0)) {
         openAuthModal("signup_prompt");
       }
     }
@@ -576,6 +574,32 @@ export default function Home() {
               />
             )}
 
+            {/* ── For You Section (Moved to the top!) ── */}
+            {activeTab === "discover" && !isInSearchMode && user && forYouRepos.length > 0 && (
+              <section className="flex flex-col gap-6 mb-8 mt-2">
+                <div className="flex items-end justify-between gap-4 pl-1">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <Compass className="h-4 w-4 text-emerald-400" />
+                      <h2 className="text-xl font-bold tracking-tight text-white">
+                        For you, {user.name.split(" ")[0]}
+                      </h2>
+                    </div>
+                    <p className="text-sm text-zinc-400">
+                      Handpicked based on your interests — {user.interests.length} categor{user.interests.length === 1 ? "y" : "ies"} selected
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
+                  {forYouRepos.map((repo) => (
+                    <div key={repo.id} onClick={() => handleRepoView(repo)} className="cursor-pointer">
+                      <RepoCard repo={repo} onRun={handleRunRepo} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {!isInSearchMode && activeTab === "discover" && heroRepos.length > 0 && (
               <NewsTicker repos={heroRepos} />
             )}
@@ -760,31 +784,6 @@ export default function Home() {
             {!isLoading && !isSearching && displayRepos.length > 0 && activeTab !== "runtime" && activeTab !== "shop" && activeTab !== "feed" && (
               <div className="flex flex-col gap-12">
                 
-                {/* ── For You Section ── */}
-              {activeTab === "discover" && !isInSearchMode && user && forYouRepos.length > 0 && (
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-end justify-between gap-4 pl-1">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <Compass className="h-4 w-4 text-blue-400" />
-                        <h2 className="text-xl font-bold tracking-tight text-white">
-                          For you, {user.name.split(" ")[0]}
-                        </h2>
-                      </div>
-                      <p className="text-sm text-zinc-400">
-                        Handpicked based on your interests — {user.interests.length} categor{user.interests.length === 1 ? "y" : "ies"} selected
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
-                    {forYouRepos.map((repo) => (
-                      <div key={repo.id} onClick={() => handleRepoView(repo)} className="cursor-pointer">
-                        <RepoCard repo={repo} onRun={handleRunRepo} />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
 
               {activeTab === "discover" && !isInSearchMode && (
                   <div className="flex flex-col gap-10">
