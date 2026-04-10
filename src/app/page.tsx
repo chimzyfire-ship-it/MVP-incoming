@@ -423,45 +423,38 @@ export default function Home() {
   // ── FOR UNAUTHENTICATED USERS: Display World-Class Landing Page First ──
   if (isLoaded && !user) {
     return (
-      <div className="flex min-h-[100dvh] w-full flex-col bg-[#042a33] text-white overflow-hidden relative">
-        {/* Background Gradients & Grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(45,212,191,0.15),transparent_100%)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_100%,#000_50%,transparent_100%)] opacity-30 transform perspective-[1000px] rotate-x-[60deg] origin-bottom pointer-events-none" />
-        
-        {/* Wireframe Globe Background Rings */}
-        <div className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/5 rounded-full pointer-events-none" />
-        <div className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full pointer-events-none" />
-        <div className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] border border-white/5 rounded-[50%] pointer-events-none -rotate-12" />
+      <div className="flex min-h-[100dvh] w-full flex-col overflow-hidden relative">
+        {/* User-Provided Landing Page Background */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <Image
+            src="/landing-bg.png"
+            alt="Gitmurph Background Graphic"
+            fill
+            className="object-cover object-top"
+            priority
+          />
+          {/* Subtle gradient overlay to ensure text legibility if needed */}
+          <div className="absolute inset-0 bg-black/10" />
+        </div>
 
         {/* Navbar */}
         <header className="flex w-full items-center justify-between px-6 py-6 md:px-12 relative z-50">
           <div className="flex items-center gap-3">
-            {/* Rocket-G Logo Mark */}
-            <div className="logo-pulse relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[22%] bg-[#0f1c22] border border-white/10 shadow-[0_0_20px_rgba(45,212,191,0.2)]">
-              <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full" fill="none">
-                <path
-                  d="M34 20a14 14 0 1 1-14-14c4.5 0 8.5 2.1 11.1 5.4H26v4h9V6h-4v3.2A18 18 0 1 0 38 20H34z"
-                  fill="url(#ggradHero)"
-                  opacity="0.9"
-                />
-                <defs>
-                  <linearGradient id="ggradHero" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#e2e8f0" />
-                    <stop offset="100%" stopColor="#94a3b8" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <svg viewBox="0 0 20 20" className="relative z-10 h-[18px] w-[18px]" fill="none">
-                <path d="M10 2C7 2 4.5 5 4.5 8.5c0 2.5 1.3 4.7 3.3 5.9L7 17h6l-.8-2.6c2-.3 3.3-2.4 3.3-5.9C15.5 5 13 2 10 2z" fill="#2dd4bf" />
-                <ellipse cx="10" cy="9" rx="2" ry="2.5" fill="#0f766e" />
-                <path d="M7.5 16.5c0 1.5 1 2.5 2.5 2.5s2.5-1 2.5-2.5H7.5z" fill="#5eead4" opacity="0.7" />
-              </svg>
+            {/* User-Provided Logo Mark */}
+            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[22%] bg-black/40 overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(45,212,191,0.2)]">
+              <Image
+                src="/logo.png"
+                alt="Gitmurph Logo"
+                width={44}
+                height={44}
+                className="object-cover w-full h-full"
+              />
             </div>
-            <span className="text-xl font-bold tracking-tight">GITMURPH</span>
+            <span className="text-xl font-bold tracking-tight text-white drop-shadow-sm">GITMURPH</span>
           </div>
           <button
             onClick={() => openAuthModal("signup_prompt")}
-            className="text-[15px] font-semibold text-zinc-300 hover:text-white transition-colors"
+            className="text-[15px] font-semibold text-zinc-200 hover:text-white transition-colors"
           >
             Sign In
           </button>
@@ -484,80 +477,10 @@ export default function Home() {
             The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
           </p>
           
-          {/* Central 3D Graphic Layout */}
-          <div className="relative mt-16 h-[300px] w-[500px] sm:w-[600px] flex justify-center translate-y-4">
-            
-            {/* Left Card: Code */}
-            <div className="absolute left-[5%] top-[20%] w-[180px] h-[190px] rounded-2xl bg-[#0b1f24]/90 backdrop-blur-xl border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] animate-float-slow p-4 rotate-[-12deg] z-10 text-left">
-              <div className="flex gap-1.5 mb-3 border-b border-white/5 pb-3">
-                <div className="h-2.5 w-2.5 rounded-full bg-rose-500/80"></div>
-                <div className="h-2.5 w-2.5 rounded-full bg-amber-500/80"></div>
-                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80"></div>
-              </div>
-              <div className="space-y-2 text-[9px] font-mono leading-relaxed opacity-70">
-                <p><span className="text-emerald-400">const</span> <span className="text-blue-300">app</span> <span className="text-emerald-400">=</span> <span className="text-yellow-200">require</span>(<span className="text-[#ff7a59]">'gitmurph'</span>);</p>
-                <p><span className="text-emerald-400">async function</span> <span className="text-blue-300">deploy</span>() {'{'}</p>
-                <p className="pl-3"><span className="text-emerald-400">await</span> app.<span className="text-yellow-200">setup</span>();</p>
-                <p className="pl-3">app.<span className="text-yellow-200">run_container</span>();</p>
-                <p>{'}'}</p>
-                <p className="pt-2 text-zinc-500 italic">{'// Ready in seconds'}</p>
-              </div>
-            </div>
-
-            {/* Right Card: DB and Browser Layered */}
-            <div className="absolute right-[5%] top-[25%] animate-float-medium z-10">
-              <div className="relative rotate-[8deg]">
-                {/* Back card - Browser */}
-                <div className="absolute -top-7 -right-6 w-[88px] h-[88px] rounded-[24%] bg-blue-500/10 backdrop-blur-lg border border-blue-400/30 shadow-[0_0_40px_rgba(59,130,246,0.3)] flex flex-col p-2.5 z-0">
-                  <div className="w-full h-full rounded bg-black/40 border border-white/10 flex flex-col pt-1.5">
-                    <div className="border-b border-white/10 h-3 w-full px-1.5 flex gap-1">
-                      <div className="h-1 w-1 bg-white/40 rounded-full"></div>
-                      <div className="h-1 w-1 bg-white/40 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 p-1.5 flex flex-col gap-1.5 justify-center">
-                       <div className="h-1.5 w-3/4 bg-white/20 rounded"></div>
-                       <div className="h-1.5 w-1/2 bg-white/20 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-                {/* Front card - Database */}
-                <div className="relative w-[110px] h-[110px] rounded-[26%] bg-gradient-to-br from-cyan-50 to-white backdrop-blur-xl border border-white shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex items-center justify-center -rotate-6 z-10">
-                  <Server className="h-[46px] w-[46px] text-[#052b34] stroke-[1.5]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Center Card: Transforming Squircle + Rocket SVG placed behind */}
-            <div className="absolute top-[35%] animate-float-fast z-30 flex flex-col items-center">
-              {/* Rocket shooting from behind */}
-              <div className="absolute -top-[120px] left-[55%] animate-pulse z-[-1] drop-shadow-[0_0_30px_rgba(45,212,191,0.6)]">
-                <svg viewBox="0 0 100 100" className="h-[140px] w-[140px] -rotate-12" fill="none">
-                  <path d="M50 15c-15 15-15 35-15 35s10 10 30 10 30-10 30-10-0-20-15-35c-5-5-15-10-15-10s-10 5-15 10z" fill="#2dd4bf" />
-                  <path d="M40 50c0 10 10 15 10 15s10-5 10-15-5-15-10-15-10 5-10 15z" fill="#0f766e" />
-                  <path d="M35 50l-10 15s5 5 15 0" fill="#ff7a59" />
-                  <path d="M65 50l10 15s-5 5-15 0" fill="#ff7a59" />
-                  <path d="M50 65l-12 30c5 0 19 0 24 0z" fill="url(#fire)" opacity="0.9" />
-                  <defs>
-                    <linearGradient id="fire" x1="50" y1="65" x2="50" y2="95" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#fde047" />
-                      <stop offset="60%" stopColor="#ef4444" />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-
-              <div className="w-[140px] h-[140px] rounded-[28%] bg-gradient-to-br from-white to-teal-50 shadow-[0_40px_80px_rgba(0,0,0,0.7),0_0_50px_rgba(45,212,191,0.2)] flex items-center justify-center border border-white relative z-10">
-                 <div className="absolute inset-0 rounded-[28%] shadow-[inset_0_4px_12px_rgba(255,255,255,0.9)] pointer-events-none" />
-                 <span className="text-[52px] font-bold text-[#052b34] tracking-tighter" style={{ fontFamily: 'monospace' }}>{'</>'}</span>
-              </div>
-              <div className="mt-4 px-3.5 py-1.5 rounded-full border border-teal-400/40 bg-teal-900/60 backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.3)] z-10">
-                <span className="text-[11px] font-bold text-teal-300 tracking-widest uppercase">Transforming...</span>
-              </div>
-            </div>
-          </div>
+          {/* Spacer to replace all the 3D graphics and show the background illustration behind it */}
+          <div className="relative mt-8 h-[300px] w-full max-w-[600px] pointer-events-none" />
           
-          <div className="mt-28 flex flex-col sm:flex-row items-center justify-center gap-6 relative z-50">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 relative z-50">
             <button
               onClick={() => openAuthModal("signup_prompt")}
               className="group relative inline-flex h-[64px] items-center justify-center overflow-hidden rounded-full px-14 font-bold text-white shadow-[0_0_50px_rgba(59,130,246,0.6),0_0_100px_rgba(45,212,191,0.3)] transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] w-full sm:w-auto"
