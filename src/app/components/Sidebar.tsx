@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Star, LayoutGrid, Activity, Eye, Bookmark, Settings, Search, User, Store, Server, Rss, Cpu } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSkillLevel } from "../hooks/useSkillLevel";
