@@ -425,29 +425,29 @@ export default function Home() {
     return (
       <div className="flex min-h-[100dvh] w-full flex-col overflow-hidden relative">
         {/* User-Provided Landing Page Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 z-0 pointer-events-none bg-[#091b22] flex items-end justify-center">
           <Image
             src="/landing-bg.png"
             alt="Gitmurph Background Graphic"
             fill
-            className="object-cover object-top"
+            className="object-contain object-bottom opacity-90"
             priority
           />
-          {/* Subtle gradient overlay to ensure text legibility if needed */}
-          <div className="absolute inset-0 bg-black/10" />
+          {/* Subtle gradient overlay to ensure text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#091b22]/80 via-transparent to-transparent" />
         </div>
 
         {/* Navbar */}
         <header className="flex w-full items-center justify-between px-6 py-6 md:px-12 relative z-50">
           <div className="flex items-center gap-3">
             {/* User-Provided Logo Mark */}
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[22%] bg-black/40 overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(45,212,191,0.2)]">
+            <div className="relative flex shrink-0 items-center justify-center drop-shadow-md">
               <Image
                 src="/logo.png"
                 alt="Gitmurph Logo"
-                width={44}
-                height={44}
-                className="object-cover w-full h-full"
+                width={48}
+                height={48}
+                className="object-contain"
               />
             </div>
             <span className="text-xl font-bold tracking-tight text-white drop-shadow-sm">GITMURPH</span>
@@ -477,10 +477,7 @@ export default function Home() {
             The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
           </p>
           
-          {/* Spacer to replace all the 3D graphics and show the background illustration behind it */}
-          <div className="relative mt-8 h-[300px] w-full max-w-[600px] pointer-events-none" />
-          
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 relative z-50">
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 relative z-50">
             <button
               onClick={() => openAuthModal("signup_prompt")}
               className="group relative inline-flex h-[64px] items-center justify-center overflow-hidden rounded-full px-14 font-bold text-white shadow-[0_0_50px_rgba(59,130,246,0.6),0_0_100px_rgba(45,212,191,0.3)] transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] w-full sm:w-auto"

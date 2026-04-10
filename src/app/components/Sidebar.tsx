@@ -131,13 +131,13 @@ export default function Sidebar({
       <div className="px-5 pt-6 pb-1">
         <div className="flex items-center gap-2.5">
           {/* Rocket-G Logo Mark */}
-          <div className="relative flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[22%] bg-black/40 overflow-hidden border border-white/10 shadow-[0_0_15px_rgba(45,212,191,0.15)]">
+          <div className="relative flex shrink-0 items-center justify-center drop-shadow-sm">
             <Image
               src="/logo.png"
               alt="Gitmurph Logo"
-              width={38}
-              height={38}
-              className="object-cover w-full h-full"
+              width={42}
+              height={42}
+              className="object-contain"
             />
           </div>
           <div>
