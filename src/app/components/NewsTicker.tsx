@@ -31,8 +31,10 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
     return (
       <article
         key={`${mode}-${repo.id}`}
-        className={`group overflow-hidden rounded-3xl border border-white/10 bg-[#052f3a] shadow-[0_14px_40px_rgba(0,0,0,0.35)] ${mode === "mobile" ? "w-[92vw] max-w-[560px] shrink-0 snap-center" : "w-full"}`}
+        className={`card-3d-inner relative group overflow-hidden rounded-3xl border border-white/10 bg-[#052f3a] shadow-[0_14px_40px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:shadow-[0_28px_70px_rgba(0,0,0,0.5)] ${mode === "mobile" ? "w-[92vw] max-w-[560px] shrink-0 snap-center" : "w-full"}`}
       >
+        {/* neon top-edge shimmer */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-3xl bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
         <button
           onClick={() => window.open(repo.url, "_blank")}
           className="block w-full text-left"
@@ -43,9 +45,8 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
               alt=""
               fill
               sizes={mode === "mobile" ? "92vw" : "33vw"}
-              className="object-cover"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            {/* Removed: cover image / opengraph quick-look overlay */}
             <div className={`absolute inset-0 bg-gradient-to-t ${toneClass} via-transparent to-transparent`} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-zinc-100 backdrop-blur">
@@ -81,14 +82,14 @@ export default function NewsTicker({ repos }: NewsTickerProps) {
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-300/80">
                 {friendlyCategoryLabel(repo)}
               </p>
-              <h3 className="truncate text-[22px] font-semibold tracking-tight text-white">
+              <h3 className="truncate text-[22px] font-semibold tracking-tight text-white group-hover:text-blue-100 transition-colors">
                 {repo.title}
               </h3>
               <p className="line-clamp-2 text-sm leading-snug text-zinc-300">
                 {summary.short}
               </p>
             </div>
-            <div className="flex h-9 min-w-[78px] items-center justify-center gap-1.5 rounded-full border border-blue-400/40 bg-blue-500/15 px-3 text-xs font-semibold tracking-wide text-blue-200">
+            <div className="flex h-9 min-w-[78px] items-center justify-center gap-1.5 rounded-full border border-blue-400/40 bg-blue-500/15 px-3 text-xs font-semibold tracking-wide text-blue-200 transition-all duration-200 group-hover:bg-blue-500/25 group-hover:border-blue-400/60 group-hover:shadow-[0_0_16px_rgba(59,130,246,0.3)]">
               <Play className="h-3 w-3 fill-blue-200" />
               Run
             </div>

@@ -142,10 +142,11 @@ function MarketplaceCard({
   return (
     <article
       onClick={onView}
-      className="group relative flex w-full cursor-pointer items-start gap-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.07] hover:border-white/15 hover:shadow-[0_8px_40px_rgba(0,0,0,0.3)]"
+      className="card-3d-inner group relative flex w-full cursor-pointer items-start gap-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.07] hover:border-white/15 hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)]"
     >
-      {/* Icon */}
-      <div className="relative shrink-0 overflow-hidden squircle shadow-[0_2px_14px_rgba(0,0,0,0.5)] h-[80px] w-[80px] bg-black/40 border border-white/10 flex items-center justify-center">
+      {/* Icon with palette glow halo */}
+      <div className="relative shrink-0 overflow-hidden squircle h-[80px] w-[80px] bg-black/40 border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:border-white/25">
+        <div className="absolute inset-0 rounded-[22%] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ boxShadow: '0 0 22px rgba(59,130,246,0.35), inset 0 0 10px rgba(59,130,246,0.15)' }} />
         {repo.avatar ? (
           <Image
             src={repo.avatar}
@@ -295,12 +296,12 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
   return (
     <div className="flex flex-col gap-10 animate-in fade-in duration-300">
 
-      {/* ═══ Hero Spotlight ═══ */}
+      {/* ═══ Hero Spotlight — CASH-style diagonal depth stack ═══ */}
       {spotlightRepos.length > 0 && (
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-blue-600/20 via-cyan-500/10 to-purple-600/10 p-6 sm:p-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.15),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(147,51,234,0.1),transparent_50%)]" />
-          <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-purple-500/8 blur-3xl" />
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-blue-600/20 via-cyan-500/10 to-purple-600/10 p-6 sm:p-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(147,51,234,0.12),transparent_55%)]" />
+          <div className="absolute top-0 right-0 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-purple-500/10 blur-3xl" />
 
           <div className="relative">
             <div className="flex items-center gap-2 mb-3">
@@ -310,18 +311,27 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
             <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Today&apos;s Top Picks</h2>
             <p className="mt-1 text-sm text-zinc-300">Hand-picked apps ready to run instantly</p>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Diagonal depth-stack layout: centre card elevated, side cards tilted */}
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start">
               {spotlightRepos.map((repo, idx) => {
                 const backdrop = getRepoBackdrop(repo);
+                /* CASH-style: centre card sits highest, flanking cards tilt inward */
+                const tiltClass =
+                  idx === 0 ? "sm:rotate-[-2deg] sm:translate-y-3 sm:origin-bottom-right" :
+                  idx === 1 ? "sm:-translate-y-3 sm:scale-[1.04] sm:z-10" :
+                  "sm:rotate-[2deg] sm:translate-y-3 sm:origin-bottom-left";
+                const delay = idx === 0 ? "0ms" : idx === 1 ? "80ms" : "160ms";
                 return (
                   <button
                     key={repo.id}
                     onClick={() => onRepoView(repo)}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/20 text-left transition-all hover:border-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] hover:-translate-y-0.5"
+                    style={{ animationDelay: delay }}
+                    className={`card-float-in group relative overflow-hidden rounded-2xl border border-white/10 bg-black/20 text-left transition-all duration-300 hover:border-white/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.55)] hover:-translate-y-2 hover:scale-[1.02] ${tiltClass}`}
                   >
+                    {/* neon top-edge shimmer on hover */}
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative aspect-[16/10] w-full overflow-hidden">
-                      <Image src={backdrop} alt="" fill sizes="33vw" className="object-cover" />
-                      {/* Cover image previews removed — just the gradient backdrop */}
+                      <Image src={backdrop} alt="" fill sizes="33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
                         {idx === 0 ? "🏆 #1 Pick" : idx === 1 ? "⚡ Hot" : "✨ New"}
@@ -329,13 +339,13 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
                     </div>
                     <div className="p-3.5">
                       <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-black/30">
+                        <div className="h-8 w-8 shrink-0 squircle overflow-hidden border border-white/15 bg-black/30">
                           {repo.avatar && (
                             <Image src={repo.avatar} alt={repo.owner || ""} width={32} height={32} className="h-full w-full object-cover" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-[13px] font-semibold text-white">{repo.title}</p>
+                          <p className="truncate text-[13px] font-semibold text-white group-hover:text-blue-200 transition-colors">{repo.title}</p>
                           <p className="text-[11px] text-zinc-400">{repo.owner}</p>
                         </div>
                       </div>

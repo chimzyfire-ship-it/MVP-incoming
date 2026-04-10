@@ -154,8 +154,16 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
 
   if (variant === "widget") {
     return (
-      <article className="group relative flex min-h-[248px] w-full overflow-hidden rounded-[30px] border border-white/10 bg-[#062a34] p-0 shadow-[0_24px_70px_rgba(0,0,0,0.34)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_30px_90px_rgba(0,0,0,0.42)]">
-        <div className="relative min-h-[248px] w-full">
+      <article
+        style={{ '--accent': palette.glow } as React.CSSProperties}
+        className="card-3d-wrap group relative flex min-h-[248px] w-full overflow-hidden rounded-[30px] border border-white/10 bg-[#062a34] p-0 shadow-[0_24px_70px_rgba(0,0,0,0.34)] card-float-in"
+      >
+        {/* Animated neon top-edge accent */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ background: `linear-gradient(90deg, transparent, ${palette.glow}CC, transparent)` }}
+        />
+        <div className="card-3d-inner relative min-h-[248px] w-full">
           <Image
             src={backdrop}
             alt=""
@@ -245,7 +253,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
               <div className="flex shrink-0 items-center gap-2">
                 <button
                   onClick={handleRun}
-                  className="flex h-11 min-w-[92px] items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/12 px-4 text-sm font-semibold tracking-wide text-white backdrop-blur-md transition-all hover:bg-white/20"
+                  className="flex h-11 min-w-[92px] items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/12 px-4 text-sm font-semibold tracking-wide text-white backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                   aria-label={`Run ${repo.title}`}
                 >
                   <Play className="h-3.5 w-3.5 fill-white" />
@@ -277,8 +285,20 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
   }
 
   return (
-    <article className="group flex w-full items-start gap-4 border-b border-white/5 py-4 transition-all hover:bg-white/5 px-2 rounded-xl">
-      <div className="relative shrink-0 overflow-hidden squircle shadow-[0_2px_10px_rgba(0,0,0,0.5)] h-[88px] w-[88px] bg-black/40 border border-white/10 flex flex-col justify-center items-center">
+    <article
+      style={{ '--glow': palette.glow } as React.CSSProperties}
+      className="card-3d-inner group flex w-full items-start gap-4 border-b border-white/5 py-4 transition-all duration-300 hover:bg-white/[0.04] px-2 rounded-xl hover:border-white/10 hover:shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
+    >
+      {/* Squircle icon with glow accent on hover */}
+      <div
+        className="relative shrink-0 overflow-hidden squircle h-[88px] w-[88px] bg-black/40 border border-white/10 flex flex-col justify-center items-center transition-all duration-300 group-hover:border-white/20"
+        style={{ boxShadow: 'none' }}
+      >
+        {/* glow halo */}
+        <div
+          className="absolute inset-0 rounded-[22%] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ boxShadow: `0 0 24px ${palette.glow}55, inset 0 0 12px ${palette.glow}22` }}
+        />
         {repo.avatar ? (
           <Image
             src={repo.avatar}
@@ -319,7 +339,7 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
       <div className="flex shrink-0 flex-col justify-center items-end gap-2 pl-2">
         <button
           onClick={handleRun}
-          className="flex h-[34px] min-w-[80px] items-center justify-center gap-1.5 rounded-[8px] border border-blue-500/30 bg-blue-500/10 px-4 text-[13px] font-bold tracking-wide text-blue-400 transition-all hover:bg-blue-500/20 hover:border-blue-500/50 shadow-inner group-hover:bg-blue-500/30"
+          className="flex h-[34px] min-w-[80px] items-center justify-center gap-1.5 rounded-[8px] border border-blue-500/30 bg-blue-500/10 px-4 text-[13px] font-bold tracking-wide text-blue-400 transition-all duration-200 hover:bg-blue-500/25 hover:border-blue-500/60 hover:shadow-[0_0_16px_rgba(59,130,246,0.3)] active:scale-95"
           aria-label={`Run ${repo.title}`}
         >
           <Play className="h-3 w-3 fill-blue-400" /> Run

@@ -129,8 +129,28 @@ export default function Sidebar({
       {/* ── GITMURPH Brand ── */}
       <div className="px-5 pt-6 pb-1">
         <div className="flex items-center gap-2.5">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-            <span className="text-[15px] font-black text-white tracking-tight">G</span>
+          {/* Rocket-G Logo Mark */}
+          <div className="logo-pulse relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[22%] bg-[#0f1c22] border border-white/10">
+            {/* Outer G ring */}
+            <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full" fill="none">
+              <path
+                d="M34 20a14 14 0 1 1-14-14c4.5 0 8.5 2.1 11.1 5.4H26v4h9V6h-4v3.2A18 18 0 1 0 38 20H34z"
+                fill="url(#ggrad)"
+                opacity="0.9"
+              />
+              <defs>
+                <linearGradient id="ggrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#e2e8f0" />
+                  <stop offset="100%" stopColor="#94a3b8" />
+                </linearGradient>
+              </defs>
+            </svg>
+            {/* Teal rocket */}
+            <svg viewBox="0 0 20 20" className="relative z-10 h-4 w-4" fill="none">
+              <path d="M10 2C7 2 4.5 5 4.5 8.5c0 2.5 1.3 4.7 3.3 5.9L7 17h6l-.8-2.6c2-.3 3.3-2.4 3.3-5.9C15.5 5 13 2 10 2z" fill="#2dd4bf" />
+              <ellipse cx="10" cy="9" rx="2" ry="2.5" fill="#0f766e" />
+              <path d="M7.5 16.5c0 1.5 1 2.5 2.5 2.5s2.5-1 2.5-2.5H7.5z" fill="#5eead4" opacity="0.7" />
+            </svg>
           </div>
           <div>
             <h1 className="text-[17px] font-bold tracking-tight text-white leading-none">GITMURPH</h1>

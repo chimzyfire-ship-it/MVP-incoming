@@ -111,6 +111,15 @@ export async function GET(request: Request) {
     (fullName) => `https://api.github.com/repos/${fullName}`,
   );
 
+  // Build GitHub request headers — include auth token when available
+  // (raises rate-limit from 60 → 5,000 req/hour, preventing 403s in prod)
+  function ghHeaders(): Record<string, string> {
+    const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
+    const token = process.env.GITHUB_TOKEN;
+    if (token) headers["Authorization"] = `token ${token}`;
+    return headers;
+  }
+
   // Standard search-based catalog
   const catalog: Record<string, string[]> = {
     discover: [
@@ -138,7 +147,7 @@ export async function GET(request: Request) {
       const responses = await Promise.allSettled(
         CURATED_RUNNABLE_URLS.map((url) =>
           fetch(url, {
-            headers: { Accept: "application/vnd.github.v3+json" },
+            headers: ghHeaders(),
             next: { revalidate: 3600 },
           }),
         ),
@@ -162,7 +171,7 @@ export async function GET(request: Request) {
     const responses = await Promise.all(
       urls.map((url) =>
         fetch(url, {
-          headers: { Accept: "application/vnd.github.v3+json" },
+          headers: ghHeaders(),
           next: { revalidate: 3600 },
         }),
       ),
@@ -188,7 +197,7 @@ export async function GET(request: Request) {
       const curatedResponses = await Promise.allSettled(
         CURATED_RUNNABLE_URLS.map((url) =>
           fetch(url, {
-            headers: { Accept: "application/vnd.github.v3+json" },
+            headers: ghHeaders(),
             next: { revalidate: 3600 },
           }),
         ),

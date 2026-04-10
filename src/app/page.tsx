@@ -432,8 +432,26 @@ export default function Home() {
         {/* Navbar */}
         <header className="flex w-full items-center justify-between px-6 py-6 md:px-12 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-              <span className="text-[18px] font-black tracking-tight text-white">G</span>
+            {/* Rocket-G Logo Mark */}
+            <div className="logo-pulse relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[22%] bg-[#0f1c22] border border-white/10">
+              <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full" fill="none">
+                <path
+                  d="M34 20a14 14 0 1 1-14-14c4.5 0 8.5 2.1 11.1 5.4H26v4h9V6h-4v3.2A18 18 0 1 0 38 20H34z"
+                  fill="url(#ggradHero)"
+                  opacity="0.9"
+                />
+                <defs>
+                  <linearGradient id="ggradHero" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#e2e8f0" />
+                    <stop offset="100%" stopColor="#94a3b8" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <svg viewBox="0 0 20 20" className="relative z-10 h-[18px] w-[18px]" fill="none">
+                <path d="M10 2C7 2 4.5 5 4.5 8.5c0 2.5 1.3 4.7 3.3 5.9L7 17h6l-.8-2.6c2-.3 3.3-2.4 3.3-5.9C15.5 5 13 2 10 2z" fill="#2dd4bf" />
+                <ellipse cx="10" cy="9" rx="2" ry="2.5" fill="#0f766e" />
+                <path d="M7.5 16.5c0 1.5 1 2.5 2.5 2.5s2.5-1 2.5-2.5H7.5z" fill="#5eead4" opacity="0.7" />
+              </svg>
             </div>
             <span className="text-xl font-bold tracking-tight">GITMURPH</span>
           </div>
@@ -452,7 +470,7 @@ export default function Home() {
             The App Store for Open Source
           </div>
           
-          <h1 className="max-w-4xl text-5xl font-extrabold tracking-tight text-white md:text-7xl lg:text-8xl leading-[1.1]">
+          <h1 className="max-w-4xl text-[2.75rem] font-extrabold tracking-tight text-white md:text-[5rem] lg:text-[6rem] leading-[1.05]">
             GitHub, translated <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
               for everyone.
@@ -466,13 +484,13 @@ export default function Home() {
           <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
             <button
               onClick={() => openAuthModal("signup_prompt")}
-              className="group relative inline-flex h-14 items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-500 px-10 text-lg font-bold text-white shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300 hover:scale-105 hover:bg-blue-400 hover:shadow-[0_0_60px_rgba(59,130,246,0.7)] w-full sm:w-auto"
+              className="group relative inline-flex h-14 items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-500 px-10 text-lg font-bold text-white shadow-[0_0_40px_rgba(59,130,246,0.5),0_0_80px_rgba(59,130,246,0.2)] transition-all duration-300 hover:scale-[1.04] hover:bg-blue-400 hover:shadow-[0_0_70px_rgba(59,130,246,0.75),0_0_120px_rgba(34,211,238,0.3)] active:scale-[0.98] w-full sm:w-auto"
             >
               <span className="relative z-10 flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
                 Sign In / Sign Up
               </span>
-              <div className="absolute inset-0 z-0 h-full w-full bg-gradient-to-r from-blue-600 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute inset-0 z-0 h-full w-full bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             </button>
             <p className="text-sm text-zinc-500 sm:ml-2">100% Free. Takes 30 seconds.</p>
           </div>
