@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState, useEffect, FormEvent, useMemo, useCallback } from "react";
-import { Search, Loader2, Bookmark, Eye, Server, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer, Trash2, Compass, Activity, UserPlus } from "lucide-react";
-
+import { motion } from "framer-motion";
+import { Search, Loader2, Bookmark, Eye, Server, CheckCircle2, AlertCircle, Wrench, Boxes, Hammer, Trash2, Compass, Activity, UserPlus, Code2, Database, AppWindow } from "lucide-react";
 import Sidebar, { Tab } from "./components/Sidebar";
 import MobileNav from "./components/MobileNav";
 import NewsTicker from "./components/NewsTicker";
@@ -423,76 +423,182 @@ export default function Home() {
   // ── FOR UNAUTHENTICATED USERS: Display World-Class Landing Page First ──
   if (isLoaded && !user) {
     return (
-      <div className="flex min-h-[100dvh] w-full flex-col overflow-hidden relative">
-        {/* User-Provided Landing Page Background */}
-        <div className="absolute inset-0 z-0 pointer-events-none bg-[#091b22] flex items-end justify-center">
-          <Image
-            src="/landing-bg.png"
-            alt="Gitmurph Background Graphic"
-            fill
-            className="object-contain object-bottom opacity-90"
-            priority
-          />
-          {/* Subtle gradient overlay to ensure text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#091b22]/80 via-transparent to-transparent" />
+      <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#060D13] font-sans selection:bg-cyan-500/30">
+        
+        {/* --- BACKGROUND EFFECTS --- */}
+        {/* 1. Core Radial Gradient Glow */}
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <div className="h-[800px] w-[800px] rounded-full bg-[#0B2A2F] opacity-50 blur-[120px]"></div>
         </div>
 
-        {/* Navbar */}
-        <header className="flex w-full items-center justify-between px-6 py-6 md:px-12 relative z-50">
-          <div className="flex items-center gap-3">
-            {/* User-Provided Logo Mark */}
-            <div className="relative flex shrink-0 items-center justify-center drop-shadow-md">
-              <Image
-                src="/logo.png"
-                alt="Gitmurph Logo"
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white drop-shadow-sm">GITMURPH</span>
-          </div>
-          <button
-            onClick={() => openAuthModal("signup_prompt")}
-            className="text-[15px] font-semibold text-zinc-200 hover:text-white transition-colors"
-          >
-            Sign In
-          </button>
-        </header>
+        {/* 2. Perspective Floor Grid */}
+        <div className="absolute bottom-0 left-0 right-0 z-0 h-[60vh] overflow-hidden pointer-events-none">
+          <div 
+            className="absolute inset-[-100%] border-t border-cyan-500/10 opacity-40"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(45, 212, 191, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(45, 212, 191, 0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: "60px 60px",
+              transform: "perspective(1000px) rotateX(75deg) translateY(100px) scale(2)",
+              transformOrigin: "top center",
+              maskImage: "linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)"
+            }}
+          />
+        </div>
 
-        {/* Hero Section */}
-        <main className="flex flex-1 flex-col items-center pt-8 px-4 text-center relative z-10 pb-32">
+        {/* 3. Watermark Logo */}
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2 opacity-5 blur-sm mix-blend-screen">
+           <div className="text-[40rem] font-black tracking-tighter text-white">G</div>
+        </div>
+
+
+        {/* --- FOREGROUND CONTENT --- */}
+        <div className="relative z-10 flex min-h-screen flex-col px-6 md:px-12 lg:px-24">
           
-          <div className="inline-flex items-center rounded-full border border-teal-400/30 bg-teal-500/10 px-4 py-1.5 text-sm text-teal-300 font-medium tracking-wide mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(20,184,166,0.15)]">
-            <Compass className="h-4 w-4 mr-2 opacity-80" />
-            The App Store for Open Source
-          </div>
-          
-          <h1 className="max-w-4xl text-[3rem] font-extrabold tracking-tight text-white md:text-[5.5rem] lg:text-[6.5rem] leading-[1.05] drop-shadow-lg">
-            GitHub, translated <br className="hidden sm:block" />
-            for <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-emerald-300">everyone.</span>
-          </h1>
-          
-          <p className="mt-8 max-w-2xl text-[17px] text-[#8ba2a8] md:text-[19px] font-medium leading-relaxed">
-            The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
-          </p>
-          
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 relative z-50">
-            <button
-              onClick={() => openAuthModal("signup_prompt")}
-              className="group relative inline-flex h-[64px] items-center justify-center overflow-hidden rounded-full px-14 font-bold text-white shadow-[0_0_50px_rgba(59,130,246,0.6),0_0_100px_rgba(45,212,191,0.3)] transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] w-full sm:w-auto"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400 opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-cyan-300 to-blue-500 opacity-30 blur-xl group-hover:opacity-50 transition-opacity" />
-              <div className="absolute top-0 inset-x-6 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-60" />
-              <span className="relative z-10 flex items-center gap-2.5 text-[18px] tracking-wide drop-shadow-md">
-                <UserPlus className="h-[22px] w-[22px] opacity-90" />
-                Sign In / Sign Up
+          {/* Navigation */}
+          <nav className="flex items-center justify-between py-8">
+            <div className="flex items-center gap-3">
+              {/* Top Left Logo Area */}
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-[0_0_15px_rgba(45,212,191,0.3)] drop-shadow-md p-1">
+                 <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" priority />
+              </div>
+              <span className="text-lg font-bold tracking-widest text-white drop-shadow-md">
+                GITMURPH
               </span>
+            </div>
+            <button 
+              onClick={() => openAuthModal("signup_prompt")}
+              className="text-[15px] font-semibold text-white/70 transition-colors hover:text-white"
+            >
+              Sign In
             </button>
-            <p className="text-[16px] font-medium text-[#8ba2a8] sm:ml-2">100% Free. Takes 30 seconds.</p>
-          </div>
-        </main>
+          </nav>
+
+          {/* Hero Section */}
+          <main className="mt-16 flex flex-1 flex-col items-center text-center pb-32">
+            
+            {/* Pill Badge */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-cyan-200 shadow-[0_0_20px_rgba(20,184,166,0.15)] backdrop-blur-md"
+            >
+              <Compass className="h-4 w-4" />
+              <span>The App Store for Open Source</span>
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="max-w-4xl text-5xl font-extrabold tracking-tight text-white md:text-7xl lg:text-[6.5rem] leading-[1.05]"
+            >
+              GitHub, translated <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,211,238,0.4)]">
+                for everyone.
+              </span>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-8 max-w-2xl text-[17px] text-gray-400 md:text-[19px] leading-relaxed"
+            >
+              The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
+            </motion.p>
+
+            {/* 3D Visual Centerpiece */}
+            <div className="relative mt-20 h-[300px] w-full max-w-3xl flex justify-center">
+              
+              {/* Source Code Card (Left) */}
+              <motion.div 
+                animate={{ y: [-10, 10, -10] }}
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                className="absolute left-[5%] md:left-[15%] top-10 flex h-40 w-[190px] -rotate-6 flex-col rounded-2xl border border-white/20 bg-[#0f1b21]/90 p-4 shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-xl z-10 text-left"
+              >
+                <Code2 className="mb-2 h-5 w-5 text-amber-500 opacity-80" />
+                <div className="space-y-2">
+                  <div className="h-1.5 w-3/4 rounded bg-white/20"></div>
+                  <div className="h-1.5 w-full rounded bg-white/10"></div>
+                  <div className="h-1.5 w-5/6 rounded bg-white/10"></div>
+                  <div className="h-1.5 w-1/2 rounded bg-amber-500/40 mt-4"></div>
+                </div>
+              </motion.div>
+
+              {/* Main Rocket/Engine (Center) */}
+              <motion.div 
+                animate={{ y: [-5, 5, -5] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
+                className="absolute top-4 z-20 flex h-36 w-36 items-center justify-center rounded-3xl border border-cyan-400/30 bg-[#051c22]/60 shadow-[0_0_80px_rgba(34,211,238,0.5)] backdrop-blur-2xl"
+              >
+                {/* User's Embedded Logo Component */}
+                <Image 
+                  src="/logo.png" 
+                  alt="Main Logo Engine" 
+                  width={80}
+                  height={80}
+                  className="object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]"
+                  priority
+                />
+              </motion.div>
+
+              {/* Processing Card (Bottom Leftish) */}
+              <motion.div 
+                animate={{ y: [-8, 8, -8] }}
+                transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-6 left-[28%] md:left-[35%] z-30 flex flex-col items-center justify-center rounded-2xl border border-white/30 bg-white/10 p-3.5 shadow-[0_0_30px_rgba(255,255,255,0.2)] backdrop-blur-xl"
+              >
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#051c22] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)]">
+                  <Code2 className="h-5 w-5" />
+                </div>
+                <span className="text-[9px] font-bold tracking-[0.2em] text-white">TRANSFORMING</span>
+              </motion.div>
+
+              {/* Output Apps (Right) */}
+              <motion.div 
+                animate={{ y: [-12, 12, -12] }}
+                transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.2 }}
+                className="absolute right-[5%] md:right-[20%] top-16 rotate-3 z-10"
+              >
+                 {/* Back Card */}
+                 <div className="absolute -right-5 -top-5 flex h-24 w-24 items-center justify-center rounded-2xl border border-white/20 bg-[#3b82f6]/20 backdrop-blur-md shadow-lg">
+                    <AppWindow className="h-10 w-10 text-white/70" />
+                 </div>
+                 {/* Front Card */}
+                 <div className="relative flex h-[110px] w-[110px] items-center justify-center rounded-2xl border border-white/40 bg-white shadow-[0_0_50px_rgba(34,211,238,0.3)] backdrop-blur-xl">
+                    <Database className="h-12 w-12 text-[#051c22]" />
+                 </div>
+              </motion.div>
+
+            </div>
+
+            {/* Call To Action */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-24 flex flex-col items-center justify-center gap-6 sm:flex-row relative z-50"
+            >
+              <button 
+                onClick={() => openAuthModal("signup_prompt")}
+                className="group flex h-[64px] items-center justify-center gap-2.5 rounded-full bg-gradient-to-b from-[#3b82f6] to-[#1d4ed8] px-12 font-bold text-white shadow-[0_0_50px_-5px_rgba(59,130,246,0.8)] transition-all hover:scale-105 hover:shadow-[0_0_70px_-5px_rgba(59,130,246,1)] active:scale-[0.98] w-full sm:w-auto"
+              >
+                <UserPlus className="h-[22px] w-[22px]" />
+                <span className="text-[18px] tracking-wide">Sign In / Sign Up</span>
+              </button>
+              <span className="text-[16px] text-gray-500 font-medium">
+                100% Free. Takes 30 seconds.
+              </span>
+            </motion.div>
+
+          </main>
+        </div>
       </div>
     );
   }
