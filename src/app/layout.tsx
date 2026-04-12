@@ -30,11 +30,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} bg-[#042a33] text-white antialiased`}
     >
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="flex min-h-[100dvh] w-full flex-col bg-[#042a33] overflow-hidden selection:bg-blue-500/30">
+      <body className="flex min-h-screen w-full flex-col bg-[#042a33] selection:bg-blue-500/30" style={{ minHeight: '100svh' }}>
         <AuthProvider>
-          <div className="flex h-[100dvh] w-full">
+          <div className="flex w-full" style={{ minHeight: '100svh' }}>
             {children}
           </div>
           <AuthModal />

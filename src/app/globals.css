@@ -23,6 +23,10 @@ body {
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS Safari: enable smooth momentum scroll on touch */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent bounce overscroll turning page white on iPhone */
+  overscroll-behavior-y: none;
 }
 
 /* ── Hide scrollbars ── */
@@ -136,13 +140,18 @@ body {
 .card-3d-inner {
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
               box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   will-change: transform;
 }
 
-.card-3d-inner:hover {
-  transform: perspective(900px) rotateY(2deg) rotateX(-1.5deg) translateY(-6px) scale(1.015);
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.08);
+/* Disable 3D tilt on touch devices — causes iOS Safari rendering bugs */
+@media (hover: hover) {
+  .card-3d-inner:hover {
+    transform: perspective(900px) rotateY(2deg) rotateX(-1.5deg) translateY(-6px) scale(1.015);
+    -webkit-transform: perspective(900px) rotateY(2deg) rotateX(-1.5deg) translateY(-6px) scale(1.015);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.08);
+  }
 }
 
 /* ── Floating idle animations (for 3D heroes) ── */
