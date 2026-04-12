@@ -177,11 +177,14 @@ export async function GET(request: Request) {
       ),
     );
 
-    const failed = responses.find((res) => !res.ok);
-    if (failed) throw new Error("GitHub API failed");
-
     const payloads: GitHubSearchResponse[] = await Promise.all(
-      responses.map((res) => res.json() as Promise<GitHubSearchResponse>),
+      responses.map(async (res) => {
+        if (!res.ok) {
+          console.warn(`GitHub API returned ${res.status} — gracefully skipping`);
+          return { items: [] };
+        }
+        return res.json() as Promise<GitHubSearchResponse>;
+      }),
     );
 
     const deduped = new Map<number, GitHubRepo>();
