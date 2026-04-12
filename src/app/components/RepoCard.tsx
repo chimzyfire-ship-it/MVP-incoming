@@ -26,7 +26,8 @@ interface RepoCardProps {
   repo: Repo;
   showPrice?: boolean;
   onRun?: (repo: Repo) => void;
-  variant?: "list" | "widget";
+  variant?: "list" | "widget" | "market-card";
+  badge?: string;
 }
 
 const paletteMap: Record<string, { primary: string; secondary: string; accent: string; glow: string }> = {
@@ -77,21 +78,22 @@ export function getRepoBackdrop(repo: Repo) {
   const seed = seedVal % 5;
   const layout = seedVal % 3;
 
+  // Use pure Radial Gradients instead of heavy DOM-blocking vector blurs
   const patterns = [
-    `<circle cx="1200" cy="-100" r="700" fill="${palette.glow}" opacity="0.4" filter="blur(160px)" />
-     <circle cx="200" cy="800" r="600" fill="${palette.accent}" opacity="0.3" filter="blur(140px)" />
+    `<circle cx="1200" cy="-100" r="700" fill="url(#glowGradient)" opacity="0.4" />
+     <circle cx="200" cy="800" r="600" fill="url(#accentGradient)" opacity="0.3" />
      <path d="M-200 450 Q 800 -200 1800 450" fill="none" stroke="white" opacity="0.05" stroke-width="2" stroke-dasharray="10 20" />`,
     `<polygon points="0,0 1600,900 1600,0" fill="${palette.secondary}" opacity="0.2" />
-     <rect x="-400" y="300" width="2400" height="200" fill="${palette.glow}" opacity="0.2" transform="rotate(-15 800 450)" filter="blur(40px)" />
-     <rect x="-400" y="450" width="2400" height="100" fill="${palette.primary}" opacity="0.4" transform="rotate(-15 800 450)" filter="blur(80px)" />`,
-    `<circle cx="1400" cy="900" r="800" fill="${palette.glow}" opacity="0.2" filter="blur(100px)" />
+     <rect x="-400" y="300" width="2400" height="200" fill="url(#glowGradient)" opacity="0.2" transform="rotate(-15 800 450)" />
+     <rect x="-400" y="450" width="2400" height="100" fill="url(#primaryGradient)" opacity="0.4" transform="rotate(-15 800 450)" />`,
+    `<circle cx="1400" cy="900" r="800" fill="url(#glowGradient)" opacity="0.2" />
      <path d="M0 0 L1600 900 M0 900 L1600 0" stroke="${palette.accent}" stroke-width="40" opacity="0.05" />
      <circle cx="800" cy="450" r="300" fill="none" stroke="${palette.primary}" stroke-width="80" opacity="0.1" />`,
-    `<path d="M-100 600 C 400 300, 1200 800, 1700 200 L1700 900 L-100 900 Z" fill="${palette.secondary}" opacity="0.3" filter="blur(90px)" />
-     <path d="M-100 800 C 600 500, 1000 900, 1700 400 L1700 900 L-100 900 Z" fill="${palette.glow}" opacity="0.4" filter="blur(120px)" />`,
+    `<path d="M-100 600 C 400 300, 1200 800, 1700 200 L1700 900 L-100 900 Z" fill="${palette.secondary}" opacity="0.3" />
+     <circle cx="850" cy="650" r="800" fill="url(#glowGradient)" opacity="0.4" />`,
     `<circle cx="1500" cy="100" r="400" fill="none" stroke="${palette.primary}" stroke-width="2" opacity="0.4" stroke-dasharray="4 12" />
      <circle cx="1500" cy="100" r="600" fill="none" stroke="${palette.primary}" stroke-width="1" opacity="0.2" />
-     <circle cx="100" cy="800" r="450" fill="${palette.glow}" opacity="0.3" filter="blur(140px)" />`
+     <circle cx="100" cy="800" r="700" fill="url(#glowGradient)" opacity="0.3" />`
   ];
 
   const typographyVars = [
@@ -114,22 +116,31 @@ export function getRepoBackdrop(repo: Repo) {
           <stop offset="0%" stop-color="${palette.secondary}" stop-opacity="0.3" />
           <stop offset="100%" stop-color="${palette.secondary}" stop-opacity="0" />
         </radialGradient>
-        <filter id="noise" x="0%" y="0%" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
-          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.12 0" />
-        </filter>
+        
+        <!-- Hardware accelerated soft radial gradients to replace heavy SVG blur filters -->
+        <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="${palette.glow}" stop-opacity="1" />
+          <stop offset="100%" stop-color="${palette.glow}" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="accentGradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="${palette.accent}" stop-opacity="1" />
+          <stop offset="100%" stop-color="${palette.accent}" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="primaryGradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="${palette.primary}" stop-opacity="1" />
+          <stop offset="100%" stop-color="${palette.primary}" stop-opacity="0" />
+        </radialGradient>
       </defs>
 
       <rect width="1600" height="900" fill="url(#bg)" />
       <rect width="1600" height="900" fill="url(#meshCenter)" />
       ${patterns[seed]}
       ${typographyVars[layout]}
-      <rect width="1600" height="900" style="mix-blend-mode: overlay;" fill="url(#noise)" opacity="0.6" />
     </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-export default function RepoCard({ repo, showPrice = false, onRun, variant = "list" }: RepoCardProps) {
+export default function RepoCard({ repo, showPrice = false, onRun, variant = "list", badge }: RepoCardProps) {
   const { user, openAuthModal } = useAuth();
   const skillLevel = useSkillLevel();
   const computedPrice = repo.stars > 100000 ? "$29.99" : repo.stars > 50000 ? "$19.99" : repo.stars > 10000 ? "$9.99" : "$0";
@@ -152,6 +163,62 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
     window.open(repo.url, "_blank");
   }
 
+  if (variant === "market-card") {
+    const computedRating = repo.stars > 100000 ? 5.0 : repo.stars > 50000 ? 4.8 : repo.stars > 10000 ? 4.5 : repo.stars > 5000 ? 4.2 : repo.stars > 1000 ? 4.0 : 3.8;
+    return (
+      <article
+        onClick={() => {
+          if (onRun) onRun(repo); // Temporary click behavior to open/run
+        }}
+        className="card-float-in group relative flex flex-col overflow-hidden w-full cursor-pointer rounded-2xl border border-white/10 bg-black/20 text-left transition-all duration-300 hover:border-white/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.55)] hover:-translate-y-2 hover:scale-[1.02]"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+        <div className="relative aspect-[16/10] w-full overflow-hidden">
+          <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          {badge && (
+            <div className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur border border-white/10">
+              {badge}
+            </div>
+          )}
+          {repo.easyToRun && !badge && (
+            <div className="absolute left-3 top-3 rounded-full bg-emerald-500/20 px-2.5 py-1 text-[10px] font-semibold text-emerald-400 backdrop-blur border border-emerald-500/30">
+              ✓ Easy
+            </div>
+          )}
+        </div>
+        <div className="flex-1 p-4 flex flex-col justify-between bg-gradient-to-b from-transparent to-[#040f14]/50">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 shrink-0 squircle overflow-hidden border border-white/15 bg-black/30 flex items-center justify-center">
+                {repo.avatar ? (
+                  <Image src={repo.avatar} alt={repo.owner || ""} width={40} height={40} className="h-full w-full object-cover" />
+                ) : (
+                  <Package className="h-5 w-5 text-zinc-500" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-[14px] font-bold text-white group-hover:text-blue-200 transition-colors">{repo.title}</p>
+                <p className="text-[12px] text-zinc-400 truncate">{repo.owner || "Open Source"}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-0.5">
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              <span className="ml-1 text-[12px] font-semibold text-zinc-300">{computedRating.toFixed(1)}</span>
+            </div>
+            {showPrice && (
+              <span className={`text-[12px] font-bold ${computedPrice === "$0" ? "text-emerald-400" : "text-cyan-300"}`}>
+                {priceLabel}
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   if (variant === "widget") {
     return (
       <article
@@ -164,12 +231,10 @@ export default function RepoCard({ repo, showPrice = false, onRun, variant = "li
           style={{ background: `linear-gradient(90deg, transparent, ${palette.glow}CC, transparent)` }}
         />
         <div className="card-3d-inner relative min-h-[248px] w-full">
-          <Image
+          <img
             src={backdrop}
             alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           <div
             className="absolute inset-0"

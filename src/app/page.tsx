@@ -420,184 +420,349 @@ export default function Home() {
     return results.slice(0, 12);
   }, [user, discoverSections]);
 
-  // ── FOR UNAUTHENTICATED USERS: Display World-Class Landing Page First ──
+  // ── FOR UNAUTHENTICATED USERS: Display Pixel-Perfect Landing Page ──
   if (isLoaded && !user) {
     return (
-      <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#060D13] font-sans selection:bg-cyan-500/30">
-        
-        {/* --- BACKGROUND EFFECTS --- */}
-        {/* 1. Core Radial Gradient Glow */}
-        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-          <div className="h-[800px] w-[800px] rounded-full bg-[#0B2A2F] opacity-50 blur-[120px]"></div>
-        </div>
+      // h-full + overflow-y-auto: scrolls within the layout's h-[100dvh] wrapper
+      <div className="relative h-full w-full overflow-y-auto bg-[#060D13] font-sans selection:bg-cyan-500/30">
 
-        {/* 2. Perspective Floor Grid */}
-        <div className="absolute bottom-0 left-0 right-0 z-0 h-[60vh] overflow-hidden pointer-events-none">
-          <div 
-            className="absolute inset-[-100%] border-t border-cyan-500/10 opacity-40"
+        {/* ── BACKGROUND LAYER: fixed so it stays in place as the user scrolls ── */}
+        <div className="pointer-events-none fixed inset-0 z-0">
+          {/* Deep dark teal radial */}
+          <div
+            className="absolute inset-0"
             style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(45, 212, 191, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(45, 212, 191, 0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: "60px 60px",
-              transform: "perspective(1000px) rotateX(75deg) translateY(100px) scale(2)",
-              transformOrigin: "top center",
-              maskImage: "linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)"
+              background: "radial-gradient(ellipse 90% 70% at 50% 35%, #0c2e36 0%, #060D13 65%)",
             }}
+          />
+          {/* Neon grid floor plate – anchored bottom */}
+          <Image
+            src="/assets/Full Background plate.png"
+            alt=""
+            fill
+            className="object-cover object-bottom"
+            style={{ opacity: 0.85 }}
+            priority
+          />
+          {/* Ambient teal glow blob behind nav */}
+          <div
+            className="absolute left-1/2 top-0 -translate-x-1/2 h-[320px] w-[800px] rounded-full blur-[110px]"
+            style={{ background: "radial-gradient(ellipse, rgba(0,229,255,0.22) 0%, transparent 70%)" }}
           />
         </div>
 
-        {/* 3. Watermark Logo */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2 opacity-5 blur-sm mix-blend-screen">
-           <div className="text-[40rem] font-black tracking-tighter text-white">G</div>
-        </div>
+        {/* ── FOREGROUND CONTENT (scrolls over the fixed bg) ── */}
+        <div className="relative z-10 flex flex-col min-h-screen pb-20">
 
-
-        {/* --- FOREGROUND CONTENT --- */}
-        <div className="relative z-10 flex min-h-screen flex-col px-6 md:px-12 lg:px-24">
-          
-          {/* Navigation */}
-          <nav className="flex items-center justify-between py-8">
-            <div className="flex items-center gap-3">
-              {/* Top Left Logo Area */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-[0_0_15px_rgba(45,212,191,0.3)] drop-shadow-md p-1">
-                 <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" priority />
+          {/* ── NAVIGATION ── */}
+          <nav className="mx-auto w-full max-w-6xl px-6 pt-6 pb-4 sticky top-0 z-20">
+            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-5 py-3 backdrop-blur-xl shadow-[0_0_30px_rgba(0,229,255,0.07)]">
+              {/* Brand */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-[#101820] p-1 shadow-[0_0_14px_rgba(0,229,255,0.3)]">
+                  <Image
+                    src="/assets/The official gitmurph logo .png"
+                    alt="Gitmurph Logo"
+                    width={28}
+                    height={28}
+                    className="object-contain"
+                    style={{ width: 28, height: "auto" }}
+                    priority
+                  />
+                </div>
+                <span className="text-[17px] font-bold tracking-tight text-white">Gitmurph</span>
               </div>
-              <span className="text-lg font-bold tracking-widest text-white drop-shadow-md">
-                GITMURPH
-              </span>
+
+              {/* Center links */}
+              <div className="hidden sm:flex items-center gap-8">
+                <a 
+                  href="#features" 
+                  onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+                  className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  Features
+                </a>
+                <a 
+                  href="#pricing" 
+                  onClick={(e) => { e.preventDefault(); document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' }); }}
+                  className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  Pricing
+                </a>
+              </div>
+
+              {/* Right actions */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => openAuthModal("signin_prompt")}
+                  className="hidden sm:block text-[15px] font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  id="get-started-btn"
+                  onClick={() => openAuthModal("signup_prompt")}
+                  className="flex h-10 items-center rounded-full bg-cyan-400 px-5 text-[14px] font-bold text-black shadow-[0_0_18px_rgba(0,229,255,0.55)] transition-all hover:bg-cyan-300 hover:shadow-[0_0_28px_rgba(0,229,255,0.75)] active:scale-[0.97]"
+                >
+                  Get Started
+                </button>
+              </div>
             </div>
-            <button 
-              onClick={() => openAuthModal("signup_prompt")}
-              className="text-[15px] font-semibold text-white/70 transition-colors hover:text-white"
-            >
-              Sign In
-            </button>
           </nav>
 
-          {/* Hero Section */}
-          <main className="mt-16 flex flex-1 flex-col items-center text-center pb-32">
-            
-            {/* Pill Badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-cyan-200 shadow-[0_0_20px_rgba(20,184,166,0.15)] backdrop-blur-md"
-            >
-              <Compass className="h-4 w-4" />
-              <span>The App Store for Open Source</span>
-            </motion.div>
-
+          {/* ── HERO TEXT ── */}
+          <main className="mt-8 flex flex-col items-center text-center px-6">
             {/* Headline */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="max-w-4xl text-5xl font-extrabold tracking-tight text-white md:text-7xl lg:text-[6.5rem] leading-[1.05]"
-            >
-              GitHub, translated <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,211,238,0.4)]">
-                for everyone.
+            <h1 className="max-w-5xl text-[clamp(2.8rem,6.5vw,5.5rem)] font-extrabold leading-[1.05] tracking-tight">
+              <span className="text-white">GitHub, translated </span>
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(90deg, #00e5ff 0%, #7dd3fc 100%)" }}
+              >
+                everyone.
               </span>
-            </motion.h1>
+            </h1>
 
-            {/* Subtitle */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-8 max-w-2xl text-[17px] text-gray-400 md:text-[19px] leading-relaxed"
-            >
-              The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and jargon. We make discovering, understanding, and running open-source apps completely effortless.
-            </motion.p>
+            {/* Sub-headline */}
+            <p className="mt-5 max-w-2xl text-[clamp(0.9rem,1.6vw,1.1rem)] leading-relaxed text-gray-400">
+              The world&apos;s best tools aren&apos;t on the App Store—they&apos;re hidden on GitHub behind complex code and
+              jargon. We make discovering, understanding, and running open-source apps completely effortless.
+            </p>
 
-            {/* 3D Visual Centerpiece */}
-            <div className="relative mt-20 h-[300px] w-full max-w-3xl flex justify-center">
+            {/* ── 3D VISUAL CENTERPIECE ── */}
+            <div className="relative mt-24 mb-16 h-[380px] w-full max-w-[900px] flex justify-center perspective-[1200px]">
               
-              {/* Source Code Card (Left) */}
+              {/* 1. Source Code Panel (Left) */}
               <motion.div 
-                animate={{ y: [-10, 10, -10] }}
-                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                className="absolute left-[5%] md:left-[15%] top-10 flex h-40 w-[190px] -rotate-6 flex-col rounded-2xl border border-white/20 bg-[#0f1b21]/90 p-4 shadow-[0_0_40px_rgba(245,158,11,0.15)] backdrop-blur-xl z-10 text-left"
+                animate={{ y: [-12, 12, -12], rotateY: [15, 17, 15], rotateZ: [-4, -3, -4] }}
+                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                className="hidden md:flex absolute left-[5%] top-10 flex-col rounded-[24px] border border-white/20 bg-[#162029]/80 p-6 shadow-[0_30px_60px_rgba(34,211,238,0.15),inset_0_1px_4px_rgba(255,255,255,0.2)] backdrop-blur-2xl z-20 text-left w-[360px] lg:w-[400px] transform-gpu will-change-transform"
+                style={{ transformStyle: "preserve-3d" }}
               >
-                <Code2 className="mb-2 h-5 w-5 text-amber-500 opacity-80" />
-                <div className="space-y-2">
-                  <div className="h-1.5 w-3/4 rounded bg-white/20"></div>
-                  <div className="h-1.5 w-full rounded bg-white/10"></div>
-                  <div className="h-1.5 w-5/6 rounded bg-white/10"></div>
-                  <div className="h-1.5 w-1/2 rounded bg-amber-500/40 mt-4"></div>
+                {/* Mac window dots */}
+                <div className="flex gap-2.5 mb-5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]" />
+                  <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]" />
+                  <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]" />
                 </div>
+                {/* Code text */}
+                <pre className="text-[14px] leading-[1.7] font-mono text-zinc-300 overflow-hidden">
+                  <span className="text-[#ff7b72] font-semibold">import</span> <span className="text-[#c9d1d9]">app_manager</span>{"\n"}
+                  <span className="text-[#ff7b72] font-semibold">import</span> <span className="text-[#c9d1d9]">app_manager</span> <span className="text-[#ff7b72] font-semibold">as</span> <span className="text-[#c9d1d9]">app</span>{"\n\n"}
+                  <span className="text-[#ff7b72] font-semibold">def</span> <span className="text-[#d2a8ff] font-semibold">translate_repo</span><span className="text-[#c9d1d9]">():</span>{"\n"}
+                  {"    "}<span className="text-[#c9d1d9]">repo =</span> <span className="text-[#a5d6ff]">'translate_repo()'</span>{"\n\n"}
+                  <span className="text-[#8b949e]">{"    "}# Run open-source effortlessly</span>{"\n"}
+                  {"    "}<span className="text-[#c9d1d9]">app_manager.</span><span className="text-[#d2a8ff] font-semibold">deploy</span><span className="text-[#c9d1d9]">()</span>{"\n\n"}
+                  {"    "}<span className="text-[#ff7b72] font-semibold">return</span> <span className="text-[#c9d1d9]">app</span>
+                </pre>
+                
+                {/* Internal Glow Reflection */}
+                <div className="pointer-events-none absolute inset-0 rounded-[24px] bg-gradient-to-tr from-cyan-500/5 to-amber-500/5 mix-blend-overlay" />
               </motion.div>
 
-              {/* Main Rocket/Engine (Center) */}
-              <motion.div 
-                animate={{ y: [-5, 5, -5] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
-                className="absolute top-4 z-20 flex h-36 w-36 items-center justify-center rounded-3xl border border-cyan-400/30 bg-[#051c22]/60 shadow-[0_0_80px_rgba(34,211,238,0.5)] backdrop-blur-2xl"
-              >
-                {/* User's Embedded Logo Component */}
-                <Image 
-                  src="/logo.png" 
-                  alt="Main Logo Engine" 
-                  width={80}
-                  height={80}
-                  className="object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]"
-                  priority
-                />
-              </motion.div>
-
-              {/* Processing Card (Bottom Leftish) */}
+              {/* 2. Central Engine / Rocket */}
               <motion.div 
                 animate={{ y: [-8, 8, -8] }}
-                transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-6 left-[28%] md:left-[35%] z-30 flex flex-col items-center justify-center rounded-2xl border border-white/30 bg-white/10 p-3.5 shadow-[0_0_30px_rgba(255,255,255,0.2)] backdrop-blur-xl"
+                transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 0.5 }}
+                className="absolute left-1/2 top-4 z-40 -translate-x-1/2 flex items-center justify-center transform-gpu scale-125"
               >
-                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#051c22] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)]">
-                  <Code2 className="h-5 w-5" />
+                <div className="relative">
+                  {/* Exhaust Flame / Thruster Glow */}
+                  <div className="absolute -bottom-24 -right-24 w-40 h-40 rounded-[100%] bg-gradient-to-tr from-[#ff6b00] via-[#ffaa00] to-cyan-300 opacity-60 blur-3xl transform rotate-45 animate-pulse" style={{ animationDuration: '3s' }} />
+                  
+                  {/* Rocket Body using SVG to mimic 3D cyan object */}
+                  <div className="relative flex items-center justify-center rounded-full drop-shadow-[0_0_60px_rgba(34,211,238,0.7)] text-cyan-300 transform -rotate-12 translate-x-4 translate-y-4">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 24 24" fill="currentColor" stroke="none" strokeWidth="1" className="lucide lucide-rocket">
+                       <defs>
+                         <linearGradient id="rocketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                           <stop offset="0%" stopColor="#cffafe" />
+                           <stop offset="50%" stopColor="#06b6d4" />
+                           <stop offset="100%" stopColor="#0881a3" />
+                         </linearGradient>
+                       </defs>
+                       <path fill="url(#rocketGrad)" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                       <path fill="url(#rocketGrad)" d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                       <path fill="url(#rocketGrad)" d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                       <path fill="url(#rocketGrad)" d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+                     </svg>
+                  </div>
                 </div>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-white">TRANSFORMING</span>
               </motion.div>
 
-              {/* Output Apps (Right) */}
+              {/* 3. Floating Glass Cards (Right Side) */}
+              
+              {/* Code Card (< />) */}
+              <motion.div 
+                animate={{ y: [-10, 10, -10] }}
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                className="hidden md:flex absolute right-[20%] top-6 z-30 flex-col items-center gap-4 will-change-transform"
+              >
+                <div className="flex h-[110px] w-[110px] items-center justify-center rounded-[28px] border-[1.5px] border-white/30 bg-gradient-to-br from-white/10 to-transparent shadow-[0_20px_40px_rgba(0,0,0,0.5),inset_0_1px_10px_rgba(255,255,255,0.2)] backdrop-blur-xl transform-gpu rotate-3 hover:rotate-0 hover:scale-110 transition-all duration-300 group">
+                  <div className="absolute inset-0 rounded-[28px] bg-[#06b6d4]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Code2 className="h-14 w-14 text-orange-400 drop-shadow-[0_0_15px_rgba(255,165,0,0.8)]" strokeWidth={2} />
+                </div>
+                <span className="text-[11px] font-bold tracking-[0.25em] text-cyan-200 drop-shadow-[0_0_10px_rgba(34,211,238,0.9)]">TRANSFORMING...</span>
+              </motion.div>
+
+              {/* Database Card */}
+              <motion.div 
+                animate={{ y: [-15, 15, -15] }}
+                transition={{ repeat: Infinity, duration: 6.5, ease: "easeInOut", delay: 0.3 }}
+                className="absolute right-[-2%] md:right-[2%] top-[-10px] z-10"
+              >
+                <div className="flex h-[90px] w-[90px] items-center justify-center rounded-[24px] border-[1.5px] border-cyan-400/50 bg-[#042a33]/60 shadow-[0_15px_35px_rgba(0,0,0,0.6),0_0_30px_rgba(34,211,238,0.3)] backdrop-blur-xl transform-gpu -rotate-6 hover:rotate-0 hover:scale-110 transition-all duration-300">
+                  <Database className="h-12 w-12 text-cyan-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" strokeWidth={1.5} />
+                </div>
+              </motion.div>
+
+              {/* Window/Layout Card */}
               <motion.div 
                 animate={{ y: [-12, 12, -12] }}
-                transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.2 }}
-                className="absolute right-[5%] md:right-[20%] top-16 rotate-3 z-10"
+                transition={{ repeat: Infinity, duration: 5.8, ease: "easeInOut", delay: 0.8 }}
+                className="absolute right-[2%] md:right-[10%] bottom-6 z-20"
               >
-                 {/* Back Card */}
-                 <div className="absolute -right-5 -top-5 flex h-24 w-24 items-center justify-center rounded-2xl border border-white/20 bg-[#3b82f6]/20 backdrop-blur-md shadow-lg">
-                    <AppWindow className="h-10 w-10 text-white/70" />
-                 </div>
-                 {/* Front Card */}
-                 <div className="relative flex h-[110px] w-[110px] items-center justify-center rounded-2xl border border-white/40 bg-white shadow-[0_0_50px_rgba(34,211,238,0.3)] backdrop-blur-xl">
-                    <Database className="h-12 w-12 text-[#051c22]" />
-                 </div>
+                <div className="flex h-[120px] w-[120px] items-center justify-center rounded-[30px] border-[1.5px] border-white/20 bg-white/5 shadow-[0_25px_50px_rgba(0,0,0,0.5),inset_0_1px_5px_rgba(255,255,255,0.1)] backdrop-blur-xl transform-gpu rotate-6 hover:rotate-0 hover:scale-110 transition-all duration-300">
+                  <AppWindow className="h-16 w-16 text-zinc-300 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" strokeWidth={1.5} />
+                </div>
               </motion.div>
 
             </div>
-
-            {/* Call To Action */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-24 flex flex-col items-center justify-center gap-6 sm:flex-row relative z-50"
-            >
-              <button 
-                onClick={() => openAuthModal("signup_prompt")}
-                className="group flex h-[64px] items-center justify-center gap-2.5 rounded-full bg-gradient-to-b from-[#3b82f6] to-[#1d4ed8] px-12 font-bold text-white shadow-[0_0_50px_-5px_rgba(59,130,246,0.8)] transition-all hover:scale-105 hover:shadow-[0_0_70px_-5px_rgba(59,130,246,1)] active:scale-[0.98] w-full sm:w-auto"
-              >
-                <UserPlus className="h-[22px] w-[22px]" />
-                <span className="text-[18px] tracking-wide">Sign In / Sign Up</span>
-              </button>
-              <span className="text-[16px] text-gray-500 font-medium">
-                100% Free. Takes 30 seconds.
-              </span>
-            </motion.div>
-
           </main>
+
+          {/* ── FEATURES SECTION (Bento Grid) ── */}
+          <section id="features" className="mt-32 px-6 pb-24 w-full flex justify-center">
+            <div className="max-w-5xl w-full flex flex-col items-center">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4 text-center drop-shadow-sm">
+                Magic, Without the Manual.
+              </h2>
+              <p className="text-[17px] text-zinc-400 max-w-2xl text-center mb-16 font-medium">
+                We wrapped the hardest parts of computer science into aesthetic little bubbles. Just tap and let it work.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full">
+                
+                {/* Feature 1: Search & Translate (Span 8 columns) */}
+                <motion.div 
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="md:col-span-8 will-change-transform group relative flex flex-col justify-end h-[360px] overflow-hidden rounded-[32px] border border-white/10 bg-[#0a151a] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.5),inset_0_1px_5px_rgba(255,255,255,0.05)]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+                  
+                  {/* Custom UI Art: Search Command Window */}
+                  <div className="absolute top-8 right-8 left-8 h-[200px] rounded-2xl border border-white/15 bg-black/60 shadow-2xl backdrop-blur-md overflow-hidden flex flex-col translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div className="flex items-center gap-3 border-b border-white/10 px-5 py-3 bg-white/5">
+                      <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-rose-500"/><div className="w-3 h-3 rounded-full bg-amber-500"/><div className="w-3 h-3 rounded-full bg-emerald-500"/></div>
+                      <div className="flex-1 flex items-center h-7 rounded-md bg-black/50 px-3 border border-white/5 shadow-inner">
+                        <span className="text-xs text-cyan-400 font-mono flex items-center gap-2"><span className="text-zinc-500">{'>'}</span> find neural-net upscale</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 p-5 relative overflow-hidden">
+                       <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-cyan-500/20 blur-3xl rounded-full" />
+                       <div className="w-3/4 h-3 rounded bg-zinc-800 mb-3" />
+                       <div className="w-1/2 h-3 rounded bg-zinc-800 mb-3" />
+                       <div className="w-full h-3 rounded bg-cyan-900/40 mb-3 border border-cyan-500/20" />
+                       <div className="w-2/3 h-3 rounded bg-zinc-800" />
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 w-full md:w-2/3">
+                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight drop-shadow-md">Find Anything</h3>
+                    <p className="text-[15px] text-zinc-400 leading-relaxed font-medium">
+                      Search through thousands of projects effortlessly. We sort through the raw developer jargon so you only see what matters.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* Feature 2: One-Click (Span 4 columns) */}
+                <motion.div 
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="md:col-span-4 will-change-transform group relative flex flex-col justify-end h-[360px] overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-b from-[#0a151a] to-[#04090b] p-8 shadow-[0_20px_40px_rgba(0,0,0,0.5),inset_0_1px_5px_rgba(255,255,255,0.05)]"
+                >
+                  {/* Custom UI Art: Spinning Deploy Ring */}
+                  <div className="absolute top-12 left-1/2 -translate-x-1/2 w-32 h-32">
+                    <div className="absolute inset-0 rounded-full border-[3px] border-dashed border-blue-500/30 animate-[spin_10s_linear_infinite] group-hover:border-blue-400/80 transition-colors duration-500" />
+                    <div className="absolute inset-2 rounded-full border-2 border-cyan-400/20 animate-[spin_7s_linear_infinite_reverse]" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.6)] flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                        <div className="h-4 w-4 bg-white rounded-sm drop-shadow-[0_0_5px_white]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 text-center">
+                    <h3 className="text-xl font-bold text-white mb-2 tracking-tight drop-shadow-md">One-Click Play</h3>
+                    <p className="text-[14px] text-zinc-400 leading-relaxed font-medium">
+                      Tap a single button to launch. Downloads, setups, and backgrounds tasks map out automatically.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* Feature 3: Safe & Simple (Span 12 columns, horizontal) */}
+                <motion.div 
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="md:col-span-12 will-change-transform group relative flex flex-col md:flex-row items-center justify-between overflow-hidden rounded-[32px] border border-white/10 bg-[#061014] p-8 md:p-10 shadow-[0_20px_40px_rgba(0,0,0,0.5),inset_0_1px_5px_rgba(255,255,255,0.05)]"
+                >
+                  <div className="absolute -left-32 -bottom-32 w-96 h-96 bg-emerald-500/10 blur-[100px] rounded-full group-hover:bg-emerald-500/20 transition-colors duration-700" />
+                  
+                  <div className="relative z-10 md:w-1/2 mb-8 md:mb-0">
+                    <h3 className="text-3xl font-bold text-white mb-3 tracking-tight drop-shadow-md">Clean Environment</h3>
+                    <p className="text-[16px] text-zinc-400 leading-relaxed font-medium max-w-md">
+                      Everything runs securely isolated in the background. If you don't like an app, delete it with one click. Simple, safe, and entirely effortless.
+                    </p>
+                  </div>
+
+                  {/* Custom UI Art: Shield / Abstract Geometry */}
+                  <div className="relative z-10 w-full md:w-1/2 h-[160px] flex justify-center md:justify-end items-center pr-0 md:pr-10">
+                    <div className="relative w-[280px] h-20 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center justify-between px-6 overflow-hidden group-hover:border-emerald-400/30 transition-colors duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-[1.5s] ease-in-out" />
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-full bg-[#112429] flex items-center justify-center border border-emerald-500/20">
+                            <svg className="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                           <div className="w-20 h-2 bg-emerald-500/40 rounded-full" />
+                           <div className="w-12 h-2 bg-zinc-700/50 rounded-full" />
+                         </div>
+                      </div>
+                      <div className="w-14 h-6 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                        <span className="text-[9px] font-bold text-emerald-400 uppercase">Secure</span>
+                      </div>
+                    </div>
+                  </div>
+                    
+                </motion.div>
+
+              </div>
+            </div>
+          </section>
+
+          {/* ── PRICING SECTION ── */}
+          <section id="pricing" className="mt-16 px-6 pb-32 w-full flex justify-center">
+            <div className="max-w-4xl w-full">
+              <div className="relative rounded-[40px] border border-white/10 bg-[#0d161c]/80 p-10 md:p-16 overflow-hidden backdrop-blur-2xl shadow-[0_40px_80px_rgba(0,0,0,0.6)] text-center">
+                {/* Glow behind card content */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-gradient-to-r from-cyan-500/20 to-blue-500/20 blur-[100px]" />
+                
+                <h2 className="relative z-10 text-4xl md:text-5xl font-extrabold text-white mb-6">
+                  It's Open Source.<br/>
+                  <span className="text-cyan-400">It's 100% Free.</span>
+                </h2>
+                <p className="relative z-10 text-lg text-gray-400 max-w-xl mx-auto mb-10">
+                  No hidden fees, no subscriptions, and no limits. The world of open source was meant to be free, and we're keeping it that way forever.
+                </p>
+                <button
+                  onClick={() => openAuthModal("signup_prompt")}
+                  className="relative z-10 inline-flex h-[56px] items-center justify-center gap-2 rounded-full bg-white px-10 text-[16px] font-bold text-black shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all hover:scale-105 active:scale-[0.98]"
+                >
+                  Get Started Now
+                </button>
+              </div>
+            </div>
+          </section>
+
         </div>
       </div>
     );
@@ -696,7 +861,7 @@ export default function Home() {
               />
             )}
 
-            {/* ── For You Section (Moved to the top!) ── */}
+            {/* ── For You Section ── */}
             {activeTab === "discover" && !isInSearchMode && user && forYouRepos.length > 0 && (
               <section className="flex flex-col gap-6 mb-8 mt-2">
                 <div className="flex items-end justify-between gap-4 pl-1">
@@ -712,8 +877,22 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+
+                {/* ── Featured Strip: top 3 as visual cards ── */}
+                {forYouRepos.length >= 3 && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    {forYouRepos.slice(0, 3).map((repo, idx) => (
+                      <div key={`featured-${repo.id}`} onClick={() => handleRepoView(repo)} className="cursor-pointer">
+                        <RepoCard repo={repo} onRun={handleRunRepo} variant="market-card" showPrice={false}
+                          badge={idx === 0 ? "🏆 #1 Pick" : idx === 1 ? "⚡ Hot" : "✨ New"} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Remaining repos as clean icon-row list ── */}
                 <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
-                  {forYouRepos.map((repo) => (
+                  {forYouRepos.slice(3).map((repo) => (
                     <div key={repo.id} onClick={() => handleRepoView(repo)} className="cursor-pointer">
                       <RepoCard repo={repo} onRun={handleRunRepo} />
                     </div>
@@ -963,9 +1142,22 @@ export default function Home() {
                         </button>
                       ) : null}
                     </div>
-                    
+
+                    {/* ── Featured Strip: top 3 visual cards ── */}
+                    {!isInSearchMode && visibleRepos.length >= 3 && (
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {visibleRepos.slice(0, 3).map((repo, idx) => (
+                          <div key={`fp-${repo.id}`} onClick={() => handleRepoView(repo)} className="cursor-pointer">
+                            <RepoCard repo={repo} onRun={handleRunRepo} variant="market-card" showPrice={false}
+                              badge={idx === 0 ? "🏆 #1 Pick" : idx === 1 ? "⚡ Hot" : "✨ New"} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* ── Remaining repos as clean icon-row list ── */}
                     <div className="grid grid-cols-1 gap-x-8 gap-y-2 lg:grid-cols-2">
-                      {visibleRepos.map((repo) => (
+                      {(isInSearchMode ? visibleRepos : visibleRepos.slice(3)).map((repo) => (
                         <div key={repo.id} onClick={() => handleRepoView(repo)} className="cursor-pointer">
                           <RepoCard repo={repo} onRun={handleRunRepo} />
                         </div>

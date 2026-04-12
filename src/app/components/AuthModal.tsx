@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, ArrowRight, Check, Compass, Settings2, Code2, User, Mail } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Check, Compass, Settings2, Code2, User, Mail, Rocket } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, type GitmurphUser, type SkillLevel } from "../context/AuthContext";
 
 // ─── Interest Categories ──────────────────────────────────────────────────────
@@ -91,6 +92,7 @@ export default function AuthModal() {
   const [interests, setInterests] = useState<string[]>([]);
   const [nameError, setNameError] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
 
   // Reset when modal opens
   useEffect(() => {
@@ -116,6 +118,13 @@ export default function AuthModal() {
       }
       setNameError("");
       setMounted(true);
+      setIsLaunching(false);
+      
+      if (authModalTrigger === "signin_prompt") {
+        setAuthMode("signin");
+      } else {
+        setAuthMode("signup");
+      }
     } else {
       setTimeout(() => setMounted(false), 300);
     }
@@ -142,30 +151,75 @@ export default function AuthModal() {
   function handleFinish() {
     if (interests.length === 0) return;
     
-    if (user) {
-      updateUser({ skillLevel: skillLevel!, interests });
-      closeAuthModal();
-    } else {
-      const newUser: GitmurphUser = {
-        name: name.trim() || "User",
-        email: email.trim() || "user@example.com",
-        skillLevel: skillLevel!,
-        interests,
-        joinedAt: Date.now(),
-      };
-      signUp(newUser);
-    }
+    setIsLaunching(true);
+    
+    setTimeout(() => {
+      if (user) {
+        updateUser({ skillLevel: skillLevel!, interests });
+        closeAuthModal();
+      } else {
+        const newUser: GitmurphUser = {
+          name: name.trim() || "User",
+          email: email.trim() || "user@example.com",
+          skillLevel: skillLevel!,
+          interests,
+          joinedAt: Date.now(),
+        };
+        signUp(newUser);
+      }
+      setIsLaunching(false);
+    }, 1400); // Wait for rocket launch animation
   }
 
   const isGated = authModalTrigger === "run_gate";
   const isCompulsory = !user || !user.skillLevel || !user.interests || user.interests.length === 0;
 
   return (
-    <div
-      className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${
-        authModalOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
-    >
+    <>
+      <AnimatePresence>
+        {isLaunching && (
+          <motion.div 
+            key="global-launch-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-3xl bg-[#031116]/95"
+          >
+            <motion.div
+              initial={{ y: 150, opacity: 0, scale: 0.8 }}
+              animate={{ y: -800, opacity: 1, scale: 1.5 }}
+              transition={{ 
+                duration: 1.5, 
+                ease: [0.4, 0, 0.2, 1], // ease-in-out curve
+                times: [0, 0.2, 1] // keyframes for pop-in then shoot up
+              }}
+              className="relative flex items-center justify-center transform-gpu"
+            >
+              {/* Thruster Flame/Exhaust */}
+              <motion.div 
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: [1, 2, 3], opacity: [0, 1, 0] }}
+                transition={{ duration: 1, delay: 0.2, repeat: Infinity }}
+                className="absolute -bottom-24 w-32 h-48 rounded-[100%] bg-gradient-to-t from-[#ff4d00] via-[#ffaa00] to-cyan-300 blur-2xl opacity-90 mix-blend-screen"
+              />
+              
+              {/* Core Engine Light */}
+              <div className="absolute -bottom-8 w-16 h-16 rounded-full bg-white blur-md" />
+              
+              {/* The Rocket */}
+              <div className="relative flex h-32 w-32 items-center justify-center text-cyan-300 drop-shadow-[0_0_50px_rgba(34,211,238,1)]">
+                <Rocket className="h-24 w-24 fill-cyan-400 stroke-cyan-200" strokeWidth={1} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div
+        className={`fixed inset-0 z-[200] flex items-center justify-center p-4 transition-all duration-300 ${
+          authModalOpen && !isLaunching ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/75 backdrop-blur-md"
@@ -190,25 +244,39 @@ export default function AuthModal() {
           </button>
         )}
 
-        {/* Step indicators */}
-        <div className="flex items-center justify-center gap-2 pt-7 pb-5">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`transition-all duration-300 rounded-full ${
-                s === step
-                  ? "h-2 w-8 bg-blue-400"
-                  : s < step
-                  ? "h-2 w-2 bg-blue-400/60"
-                  : "h-2 w-2 bg-white/10"
-              }`}
-            />
-          ))}
-        </div>
+        {/* Back Button for Step 2 & 3 */}
+        {!isGated && !isCompulsory && !isLaunching && step > 1 && (
+          <button
+            onClick={() => setStep(step - 1)}
+            className="absolute left-6 top-6 flex items-center gap-1.5 text-xs font-semibold text-zinc-400 transition hover:text-white z-10"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </button>
+        )}
 
-        <div className="px-6 pb-8">
+        {/* Step indicators */}
+        {!isLaunching && (
+          <div className="flex items-center justify-center gap-2 pt-7 pb-5">
+            {[1, 2, 3].map((s) => (
+              <div
+                key={s}
+                className={`transition-all duration-300 rounded-full ${
+                  s === step
+                    ? "h-2 w-8 bg-cyan-400"
+                    : s < step
+                    ? "h-2 w-2 bg-cyan-400/60"
+                    : "h-2 w-2 bg-white/10"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="px-6 pb-8 relative">
+
           {/* ─── Step 1: Name + Email + Password ─── */}
-          {step === 1 && (
+          {step === 1 && !isLaunching && (
             <div className="flex flex-col gap-6">
               <div className="text-center">
                 {isGated && (
@@ -323,7 +391,7 @@ export default function AuthModal() {
           )}
 
           {/* ─── Step 2: Skill Level ─── */}
-          {step === 2 && (
+          {step === 2 && !isLaunching && (
             <div className="flex flex-col gap-5">
               <div className="text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white">
@@ -341,38 +409,38 @@ export default function AuthModal() {
                     <button
                       key={level.id}
                       onClick={() => setSkillLevel(level.id)}
-                      className={`group relative flex w-full items-start gap-4 rounded-2xl border p-4 text-left transition-all duration-200 ${
+                      className={`group relative flex w-full items-start gap-4 p-4 text-left transition-all duration-300 transform-gpu ${
                         isSelected
-                          ? `${level.border} ${level.glow} shadow-lg`
-                          : "border-white/8 bg-black/10 hover:border-white/15 hover:bg-white/5"
+                          ? `rounded-2xl border ${level.border} ${level.glow} shadow-[0_10px_30px_rgba(34,211,238,0.15)] -translate-y-1`
+                          : "rounded-xl border border-white/10 bg-[#0a1f26] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_8px_20px_rgba(0,0,0,0.3)] hover:bg-[#0c262f]"
                       }`}
                     >
                       <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 ${
                           isSelected
-                            ? `${level.border} ${level.color}`
-                            : "border-white/10 text-zinc-500"
+                            ? `${level.border} ${level.color} shadow-[0_0_15px_currentColor]`
+                            : "border-white/10 bg-white/5 text-zinc-500 group-hover:text-zinc-300"
                         }`}
                       >
                         {level.icon}
                       </div>
                       <div className="min-w-0 flex-1 pt-0.5">
                         <div className="flex items-center gap-2">
-                          <p className={`font-semibold text-[15px] transition-colors ${isSelected ? "text-white" : "text-zinc-300"}`}>
+                          <p className={`font-bold text-[15px] transition-colors ${isSelected ? "text-white drop-shadow-md" : "text-zinc-300 group-hover:text-white"}`}>
                             {level.label}
                           </p>
-                          <span className={`text-[11px] rounded-full border px-2 py-0.5 font-medium ${isSelected ? `${level.border} ${level.color}` : "border-white/10 text-zinc-500"}`}>
+                          <span className={`text-[10px] rounded-full px-2 py-0.5 font-bold uppercase tracking-wide transition-all ${isSelected ? `${level.border} ${level.color} bg-black/20` : "bg-white/5 text-zinc-500"}`}>
                             {level.tagline}
                           </span>
                         </div>
-                        <p className="mt-1 text-[13px] leading-relaxed text-zinc-400">
+                        <p className="mt-1 text-[13px] leading-relaxed text-zinc-400 group-hover:text-zinc-300 transition-colors">
                           {level.desc}
                         </p>
                       </div>
-                      <div className={`absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
-                        isSelected ? "border-current bg-current scale-100" : "border-white/20 scale-90"
-                      } ${level.color}`}>
-                        {isSelected && <Check className="h-3 w-3 text-[#031d24]" strokeWidth={3} />}
+                      <div className={`absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-300 ${
+                        isSelected ? "border-cyan-400 bg-cyan-400 scale-100 shadow-[0_0_10px_rgba(34,211,238,0.5)]" : "border-white/20 scale-90"
+                      }`}>
+                        {isSelected && <Check className="h-3 w-3 text-black" strokeWidth={3} />}
                       </div>
                     </button>
                   );
@@ -382,7 +450,7 @@ export default function AuthModal() {
               <button
                 onClick={handleStep2Next}
                 disabled={!skillLevel}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_20px_rgba(59,130,246,0.35)] transition hover:bg-blue-400 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-3.5 text-[15px] font-bold text-black shadow-[0_0_20px_rgba(34,211,238,0.4)] transition hover:bg-cyan-400 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 Continue <ArrowRight className="h-4 w-4" />
               </button>
@@ -390,7 +458,7 @@ export default function AuthModal() {
           )}
 
           {/* ─── Step 3: Interests ─── */}
-          {step === 3 && (
+          {step === 3 && !isLaunching && (
             <div className="flex flex-col gap-5">
               <div className="text-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white">
@@ -401,26 +469,26 @@ export default function AuthModal() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-wrap justify-center gap-3">
                 {INTEREST_CATEGORIES.map((cat) => {
                   const isSelected = interests.includes(cat.id);
                   return (
                     <button
                       key={cat.id}
                       onClick={() => toggleInterest(cat.id)}
-                      className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-150 ${
+                      className={`flex items-center gap-2.5 rounded-full border px-4 py-2.5 text-left transition-all duration-300 transform-gpu ${
                         isSelected
-                          ? "border-blue-400/50 bg-blue-500/15 text-white shadow-[0_0_12px_rgba(59,130,246,0.2)]"
-                          : "border-white/8 bg-black/10 text-zinc-400 hover:border-white/15 hover:text-zinc-200"
+                          ? "border-cyan-400/60 bg-cyan-900/30 text-white shadow-[0_0_20px_rgba(34,211,238,0.3)] -translate-y-1"
+                          : "border-white/10 bg-[#0a1f26] text-zinc-400 hover:border-white/20 hover:text-white hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgba(0,0,0,0.2)]"
                       }`}
                     >
                       <div
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: cat.color, boxShadow: `0 0 6px ${cat.color}99` }}
+                        className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all ${isSelected ? 'scale-110' : 'scale-100 opacity-60'}`}
+                        style={{ backgroundColor: cat.color, boxShadow: isSelected ? `0 0 10px ${cat.color}` : 'none' }}
                       />
-                      <span className="text-[13px] font-medium leading-snug">{cat.label}</span>
+                      <span className={`text-[14px] leading-none transition-colors ${isSelected ? 'font-bold': 'font-medium'}`}>{cat.label}</span>
                       {isSelected && (
-                        <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-blue-400" strokeWidth={2.5} />
+                        <Check className="ml-1 h-3.5 w-3.5 shrink-0 text-cyan-400" strokeWidth={3} />
                       )}
                     </button>
                   );
@@ -430,7 +498,7 @@ export default function AuthModal() {
               <button
                 onClick={handleFinish}
                 disabled={interests.length === 0}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_24px_rgba(59,130,246,0.4)] transition hover:from-blue-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-500 py-3.5 mt-4 text-[15px] font-bold text-black shadow-[0_0_24px_rgba(34,211,238,0.5)] transition hover:from-cyan-300 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 <Compass className="h-4 w-4" />
                 Show my picks
@@ -446,5 +514,6 @@ export default function AuthModal() {
         </div>
       </div>
     </div>
+    </>
   );
 }

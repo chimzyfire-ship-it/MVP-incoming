@@ -331,7 +331,7 @@ export default function MarketplaceView({ repos, isLoading, onRepoView, onRun }:
                     {/* neon top-edge shimmer on hover */}
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-2xl bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative aspect-[16/10] w-full overflow-hidden">
-                      <Image src={backdrop} alt="" fill sizes="33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={backdrop} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute left-3 top-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur">
                         {idx === 0 ? "🏆 #1 Pick" : idx === 1 ? "⚡ Hot" : "✨ New"}

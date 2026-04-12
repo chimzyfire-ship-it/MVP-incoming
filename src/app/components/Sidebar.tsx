@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Star, LayoutGrid, Activity, Eye, Bookmark, Settings, Search, User, Store, Server, Rss, Cpu } from "lucide-react";
+import { Star, LayoutGrid, Activity, Eye, Bookmark, Settings, Search, User, Store, Server, Rss, Cpu, Home } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSkillLevel } from "../hooks/useSkillLevel";
 
-export type Tab = "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "runnable" | "viewed" | "bookmarks" | "settings";
+export type Tab = "home" | "discover" | "categories" | "shop" | "feed" | "runtime" | "trending" | "runnable" | "viewed" | "bookmarks" | "settings";
 
 
 interface SidebarProps {
@@ -73,6 +73,11 @@ export default function Sidebar({
   };
 
   const navItems = [
+    {
+      label: getLabel("home", "Home"),
+      id: "home" as Tab,
+      icon: <Home className={getIconClass("home")} />,
+    },
     {
       label: getLabel("discover", "Explore"),
       id: "discover" as Tab,

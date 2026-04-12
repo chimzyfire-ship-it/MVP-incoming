@@ -14,7 +14,7 @@ export interface GitmurphUser {
   joinedAt: number;
 }
 
-export type AuthModalTrigger = "run_gate" | "manual" | "signup_prompt";
+export type AuthModalTrigger = "run_gate" | "manual" | "signup_prompt" | "signin_prompt";
 
 interface AuthContextValue {
   user: GitmurphUser | null;
