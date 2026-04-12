@@ -250,11 +250,9 @@ export default function Sidebar({
             )}
             
             {/* Icon */}
-            <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`}>
-               {/* We clone the icon to override its color manually because getIconClass enforces blue-400 */}
-               {React.cloneElement(item.icon as React.ReactElement, {
-                 className: `h-5 w-5 ${isActive ? "text-[#00e5ff]" : "text-zinc-500"}`
-               })}
+            <div className={`transition-transform duration-300 ${isActive ? 'scale-110 [&>svg]:!text-[#00e5ff]' : 'scale-100 [&>svg]:!text-zinc-500'} [&>svg]:!w-5 [&>svg]:!h-5`}>
+               {/* Use CSS parent inheritance instead of React.cloneElement to prevent strict TS errors */}
+               {item.icon}
             </div>
             
             <span className={`text-[10px] tracking-tight whitespace-nowrap transition-all duration-300 ${isActive ? "font-bold" : "font-semibold"}`}>
