@@ -785,6 +785,23 @@ export default function Home() {
         ) : showFeed ? (
           <div className="mx-auto w-full max-w-[1000px] flex flex-col gap-10">
             
+            {/* ── MOBILE TOP BAR (Logo + Profile) ── */}
+            <div className="flex lg:hidden w-full items-center justify-between pb-2">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-white/10 bg-[#101820] shadow-[0_0_10px_rgba(0,229,255,0.2)]">
+                  <Image src="/assets/The official gitmurph logo .png" alt="Logo" width={20} height={20} className="object-contain" style={{ width: 20, height: "auto" }} />
+                </div>
+                <span className="text-[16px] font-bold tracking-tight text-white">Gitmurph</span>
+              </div>
+              {user && (
+                <div onClick={() => setActiveTab("settings")} className="flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 border border-white/10 shadow-sm transition-transform active:scale-95">
+                  <span className="text-sm font-bold text-white">
+                    {user.name.slice(0, 1).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+
             <form onSubmit={handleSearch} className="w-full lg:hidden block">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />

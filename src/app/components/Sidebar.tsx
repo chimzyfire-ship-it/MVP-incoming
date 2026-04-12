@@ -1,5 +1,6 @@
 "use client";
 
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { Star, LayoutGrid, Activity, Eye, Bookmark, Settings, Search, User, Store, Server, Rss, Cpu, Home } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -131,6 +132,7 @@ export default function Sidebar({
   ];
 
   return (
+    <>
     <aside className="hidden lg:flex w-[260px] flex-col border-r border-white/5 bg-[#031d24] h-[100dvh]">
       {/* ── GITMURPH Brand ── */}
       <div className="px-5 pt-6 pb-1">
@@ -224,5 +226,44 @@ export default function Sidebar({
         )}
       </div>
     </aside>
+
+    {/* ── MOBILE BOTTOM NAVIGATION (App Store Vibe) ── */}
+    <nav className="flex lg:hidden fixed bottom-0 left-0 right-0 z-50 h-[84px] bg-[#031d24]/95 backdrop-blur-3xl border-t border-white/10 px-2 pb-6 pt-2 overflow-x-auto hide-scrollbars items-center gap-1 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+      {navItems.map((item) => {
+        // Exclude some strictly-desktop or redundant links to keep mobile nav clean
+        if (["viewed", "bookmarks"].includes(item.id)) return null;
+
+        const isActive = activeTab === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => onTabChange(item.id)}
+            className={`relative flex flex-col items-center justify-center min-w-[76px] flex-shrink-0 gap-1 rounded-xl px-1 py-1.5 transition-all ${
+              isActive 
+                ? "text-[#00e5ff]" 
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            {/* Active Indicator Glow */}
+            {isActive && (
+              <div className="absolute -top-2 w-8 h-0.5 rounded-full bg-[#00e5ff] shadow-[0_0_12px_rgba(0,229,255,1)]" />
+            )}
+            
+            {/* Icon */}
+            <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`}>
+               {/* We clone the icon to override its color manually because getIconClass enforces blue-400 */}
+               {React.cloneElement(item.icon as React.ReactElement, {
+                 className: `h-5 w-5 ${isActive ? "text-[#00e5ff]" : "text-zinc-500"}`
+               })}
+            </div>
+            
+            <span className={`text-[10px] tracking-tight whitespace-nowrap transition-all duration-300 ${isActive ? "font-bold" : "font-semibold"}`}>
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
+    </>
   );
 }
