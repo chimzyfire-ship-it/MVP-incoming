@@ -128,14 +128,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
+      // Extract userId to satisfy TypeScript's strict null checks inside async timeout
+      const userId = data.user.id;
+      
       // The trigger handles inserting into public.users. We wait a moment and then update interests
       setTimeout(async () => {
         if (newUser.skillLevel || newUser.interests) {
           await supabase.from("users").update({
             skill_level: newUser.skillLevel,
             interests: newUser.interests
-          }).eq("id", data.user.id);
-          await fetchProfile(data.user.id);
+          }).eq("id", userId);
+          await fetchProfile(userId);
         }
       }, 1000);
     }
