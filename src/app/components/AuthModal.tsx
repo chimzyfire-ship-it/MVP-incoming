@@ -81,7 +81,7 @@ const SKILL_LEVELS: {
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export default function AuthModal() {
-  const { authModalOpen, closeAuthModal, signUp, updateUser, authModalTrigger, user } = useAuth();
+  const { authModalOpen, closeAuthModal, signUp, updateUser, authModalTrigger, user, signIn } = useAuth();
 
   const [step, setStep] = useState(1);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
@@ -134,6 +134,21 @@ export default function AuthModal() {
 
   function handleStep1Next() {
     setNameError("");
+    if (authMode === "signin") {
+      if (!email.trim()) { setNameError("Please enter your email address."); return; }
+      if (!password) { setNameError("Please enter your password."); return; }
+      setIsLaunching(true);
+      setTimeout(async () => {
+        if (signIn) await signIn(email.trim(), password);
+        setIsLaunching(false);
+        closeAuthModal();
+      }, 1400);
+      return;
+    }
+    // Sign-up validation
+    if (!name.trim()) { setNameError("Please enter your name."); return; }
+    if (!email.trim()) { setNameError("Please enter your email address."); return; }
+    if (!password || password.length < 6) { setNameError("Password must be at least 6 characters."); return; }
     setStep(2);
   }
 
@@ -158,9 +173,10 @@ export default function AuthModal() {
         updateUser({ skillLevel: skillLevel!, interests });
         closeAuthModal();
       } else {
-        const newUser: GitmurphUser = {
-          name: name.trim() || "User",
-          email: email.trim() || "user@example.com",
+        const newUser: any = {
+          name: name.trim(),
+          email: email.trim(),
+          password: password,
           skillLevel: skillLevel!,
           interests,
           joinedAt: Date.now(),

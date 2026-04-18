@@ -1,16 +1,17 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { supabase } from "@/lib/supabase";
 
 export type SkillLevel = "beginner" | "intermediate" | "expert";
 
 export interface GitmurphUser {
+  id: string;
   name: string;
   email: string;
-  skillLevel: SkillLevel;
-  interests: string[]; // category IDs
+  skillLevel: SkillLevel | null;
+  interests: string[];
+  credits: number;
   joinedAt: number;
 }
 
@@ -19,21 +20,16 @@ export type AuthModalTrigger = "run_gate" | "manual" | "signup_prompt" | "signin
 interface AuthContextValue {
   user: GitmurphUser | null;
   isLoaded: boolean;
-  // Modal control
   authModalOpen: boolean;
   authModalTrigger: AuthModalTrigger | null;
   pendingRunRepo: unknown | null;
   openAuthModal: (trigger: AuthModalTrigger, pendingRepo?: unknown) => void;
   closeAuthModal: () => void;
-  // Actions
-  signUp: (user: GitmurphUser) => void;
-  updateUser: (partial: Partial<GitmurphUser>) => void;
-  signOut: () => void;
+  signUp: (user: any) => Promise<void>;
+  updateUser: (partial: Partial<GitmurphUser>) => Promise<void>;
+  signOut: () => Promise<void>;
+  signIn: (email: string, pass: string) => Promise<void>;
 }
-
-// ─── Context ──────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "gitmurph-user";
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
@@ -43,9 +39,10 @@ const AuthContext = createContext<AuthContextValue>({
   pendingRunRepo: null,
   openAuthModal: () => {},
   closeAuthModal: () => {},
-  signUp: () => {},
-  updateUser: () => {},
-  signOut: () => {},
+  signUp: async () => {},
+  updateUser: async () => {},
+  signOut: async () => {},
+  signIn: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -55,56 +52,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalTrigger, setAuthModalTrigger] = useState<AuthModalTrigger | null>(null);
   const [pendingRunRepo, setPendingRunRepo] = useState<unknown | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    
-    // Support ?onboarding=1 to demonstrate compulsory onboarding
-    if (params.has("onboarding")) {
-      params.delete("onboarding");
-      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
-      window.history.replaceState({}, "", newUrl);
-      setTimeout(() => {
-        openAuthModal("manual");
-      }, 500);
-    }
-    
-    if (params.has("reset")) {
-      try {
-        localStorage.clear();
-      } catch { /* ignore */ }
-      // Remove the ?reset param and reload cleanly
-      params.delete("reset");
-      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
-      window.location.replace(newUrl);
+  // Re-fetch user profile from public.users table
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data, error } = await supabase.from("users").select("*").eq("id", userId).single();
+    if (data) {
+      setUser({
+        id: data.id,
+        name: data.name || "User",
+        email: data.email || "",
+        skillLevel: data.skill_level as SkillLevel | null,
+        interests: data.interests || [],
+        credits: data.credits ?? 50,
+        joinedAt: new Date(data.created_at).getTime(),
+      });
     }
   }, []);
 
-  // Hydrate from localStorage on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    // Check active session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setUser(null);
       }
-    } catch {
-      /* ignore */
-    }
-    setIsLoaded(true);
-  }, []);
+      setIsLoaded(true);
+    });
 
-  // ── Cmd+Shift+L = instant sign-out & reload (Mac shortcut) ───────────────
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "l") {
-        e.preventDefault();
-        try { localStorage.clear(); } catch { /* ignore */ }
-        window.location.replace(window.location.pathname);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+        }
       }
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, []);
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchProfile]);
 
   const openAuthModal = useCallback((trigger: AuthModalTrigger, pendingRepo?: unknown) => {
     setAuthModalTrigger(trigger);
@@ -115,41 +104,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const closeAuthModal = useCallback(() => {
     setAuthModalOpen(false);
     setAuthModalTrigger(null);
-    // Don't clear pendingRunRepo here — let caller consume it
   }, []);
 
-  const signUp = useCallback((newUser: GitmurphUser) => {
-    setUser(newUser);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    } catch {
-      /* ignore */
+  const signUp = useCallback(async (newUser: any) => {
+    // In our simplified flow, we'll auto-generate a password if not provided 
+    // to keep the frontend working mostly identically for MVP purposes, 
+    // or we use the provided password if UI sends it.
+    const pass = newUser.password || 'gitmorph123!'; 
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: newUser.email,
+      password: pass,
+      options: {
+        data: {
+          name: newUser.name,
+        }
+      }
+    });
+
+    if (error) {
+      console.error("SignUp error:", error.message);
+      return;
     }
+
+    if (data.user) {
+      // The trigger handles inserting into public.users. We wait a moment and then update interests
+      setTimeout(async () => {
+        if (newUser.skillLevel || newUser.interests) {
+          await supabase.from("users").update({
+            skill_level: newUser.skillLevel,
+            interests: newUser.interests
+          }).eq("id", data.user.id);
+          await fetchProfile(data.user.id);
+        }
+      }, 1000);
+    }
+    
     setAuthModalOpen(false);
     setAuthModalTrigger(null);
+  }, [fetchProfile]);
+
+  const signIn = useCallback(async (email: string, pass: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      console.error("SignIn error:", error.message);
+    }
   }, []);
 
-  const updateUser = useCallback((partial: Partial<GitmurphUser>) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const updated = { ...prev, ...partial };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch {
-        /* ignore */
-      }
-      return updated;
-    });
-  }, []);
+  const updateUser = useCallback(async (partial: Partial<GitmurphUser>) => {
+    if (!user) return;
+    setUser(prev => prev ? { ...prev, ...partial } : null);
+    
+    // Sync to Supabase
+    const updateData: any = {};
+    if (partial.skillLevel !== undefined) updateData.skill_level = partial.skillLevel;
+    if (partial.interests !== undefined) updateData.interests = partial.interests;
+    if (partial.name !== undefined) updateData.name = partial.name;
+    
+    if (Object.keys(updateData).length > 0) {
+      await supabase.from("users").update(updateData).eq("id", user.id);
+    }
+  }, [user]);
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setPendingRunRepo(null);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
   }, []);
 
   return (
@@ -165,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         updateUser,
         signOut,
+        signIn
       }}
     >
       {children}

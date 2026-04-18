@@ -39,6 +39,7 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
-  }
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "tmp-*", "dist", "check_redis.ts", "force_run.ts", "redis.ts", "list_redis.ts", "test_redis.ts", "force_deploy.sh"]
 }

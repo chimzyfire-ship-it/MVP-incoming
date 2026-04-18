@@ -11,7 +11,7 @@ import RepoCard, { Repo } from "./components/RepoCard";
 import SettingsPanel from "./components/SettingsPanel";
 import RepoDetails from "./components/RepoDetails";
 import MarketplaceView from "./components/MarketplaceView";
-import FeedView from "./components/FeedView";
+import ExplainerFeed from "@/components/feed/ExplainerFeed";
 import { useAuth } from "./context/AuthContext";
 import { INTEREST_CATEGORIES } from "./components/AuthModal";
 
@@ -870,10 +870,9 @@ export default function Home() {
 
             {/* ═══ Feed View ═══ */}
             {activeTab === "feed" && (
-              <FeedView
+              <ExplainerFeed
                 repos={feedRepos}
                 isLoading={isLoading}
-                onRepoView={handleRepoView}
                 onRun={handleRunRepo}
               />
             )}

@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "bullmq": "^5.72.0",
     "framer-motion": "^12.38.0",
     "ioredis": "^5.10.1",
